@@ -617,3 +617,129 @@ html.dark body {
 .dark .standard-text strong {
   color: #c4ead2;
 }
+
+/* 侧边栏记录指南卡片 */
+.aside-guide-card {
+  margin-top: 24px;
+  padding: 16px;
+  background: #f4f7f1;
+  border: 1px solid #dbe4d5;
+  border-radius: 9px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.guide-card-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  color: #2b4f3a;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.guide-card-header svg {
+  color: #3f7051;
+}
+
+.guide-card-intro {
+  margin: 0 0 10px;
+  color: #6a7c6f;
+  font-size: 12px;
+}
+
+.guide-item {
+  margin-bottom: 11px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #dbe3d3;
+}
+
+.guide-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+
+.badge-error {
+  background: #fbeee8;
+  color: #9c4f2e;
+}
+
+.badge-success {
+  background: #e8f3ec;
+  color: #2e6d47;
+}
+
+.guide-desc {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: #4c5d51;
+  font-weight: 500;
+}
+
+.guide-quote {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #65776a;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 6px 8px;
+  border-radius: 5px;
+  border-left: 2px solid #94b59e;
+}
+
+.guide-foot {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #798b7e;
+  text-align: right;
+}
+
+/* 深色模式适配 */
+.dark .aside-guide-card {
+  background: #17201a;
+  border-color: #27362c;
+}
+
+.dark .guide-card-header {
+  color: #9fe2bd;
+}
+
+.dark .guide-card-header svg {
+  color: #71c798;
+}
+
+.dark .guide-card-intro {
+  color: #7a8f81;
+}
+
+.dark .guide-item {
+  border-bottom-color: #243229;
+}
+
+.dark .badge-error {
+  background: #2d211c;
+  color: #e58763;
+}
+
+.dark .badge-success {
+  background: #1d2d23;
+  color: #8ce1ae;
+}
+
+.dark .guide-desc {
+  color: #b0c9b9;
+}
+
+.dark .guide-quote {
+  color: #8ea897;
+  background: rgba(0, 0, 0, 0.25);
+  border-left-color: #3b5c46;
+}
+
+.dark .guide-foot {
+  color: #6d8475;
+}

@@ -1,6 +1,6 @@
 "use client";
 import {useEffect,useRef,useState,useCallback} from 'react';
-import {BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb,Plus,ArrowUpRight,ArrowRight,ImagePlus,Bookmark,Check,NotebookPen,CloudCheck,X,LoaderCircle,Copy,RefreshCw,CalendarDays,LockKeyhole,Sun,Moon} from 'lucide-react';
+import {BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb,Plus,ArrowUpRight,ArrowRight,ImagePlus,Bookmark,Check,NotebookPen,CloudCheck,X,LoaderCircle,Copy,RefreshCw,CalendarDays,LockKeyhole,Sun,Moon,Sparkles} from 'lucide-react';
 import {Tabs,TabsList,TabsTrigger,TabsContent} from '@/components/ui/tabs';
 import {Dialog,DialogContent,DialogTitle,DialogDescription} from '@/components/ui/dialog';
 import {Checkbox} from '@/components/ui/checkbox';
@@ -84,19 +84,28 @@ export default function Workbench({userId}:{userId:string}){
     <div className="page-heading"><div><p className="eyebrow">A LITTLE, EVERY DAY</p><h1>把刚才的想法，留下来。</h1></div><div className="date-label"><CalendarDays size={16}/><span>{today?new Date(today).toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'}):'今天'}</span></div></div>
     <div className="capture-grid"><section className="writing-column" aria-label="记录学习想法">
      <Tabs value={category} onValueChange={changeCategory} className="category-tabs"><TabsList className="category-list" aria-label="学习板块">{categories.map((c,i)=>{const Icon=icons[i];return <TabsTrigger key={c.id} value={c.id} disabled={saving}><Icon size={19}/><span>{c.name}</span></TabsTrigger>;})}</TabsList></Tabs>
-     <div className="standard-guide-banner">
-      <span className="standard-badge">📐 交付约定</span>
-      <span className="standard-text">
-        不限字数，只记真实：<strong>一个具体卡点</strong> 或 <strong>一个小发现</strong>（1~2句或配图即可交卷）
-      </span>
-     </div>
      <div className="composer"><div className="composer-top"><span className="small-label">{cat.en} / {cat.name}</span><span className="paper-index">{String(categories.indexOf(cat)+1).padStart(2,'0')}</span></div><label htmlFor="note-text" className="composer-title">{cat.hint}</label><textarea ref={textInput} id="note-text" value={item.content} maxLength={10000} disabled={!hydrated||saving} placeholder={cat.prompt} onChange={e=>updateItem({content:e.target.value})} onPaste={e=>{if(saving)return;const files=Array.from(e.clipboardData.files).filter(f=>f.type.startsWith('image/'));if(files.length){e.preventDefault();addFiles(files);}}} onKeyDown={e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();saveNote();}}}/>
       {item.files.length>0&&<div className="attachments">{item.files.map((f,i)=><Attachment key={`${f.name}-${i}`} file={f} remove={()=>{if(!saving)updateItem({files:item.files.filter((_,j)=>i!==j)});}}/>)}</div>}
       <div className="composer-footer"><input ref={fileInput} className="sr-only" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif" aria-label="选择图片" onChange={e=>{addFiles(Array.from(e.target.files??[]));e.target.value='';}}/><button className="text-button attach-button" disabled={saving||!hydrated} onClick={()=>fileInput.current?.click()}><ImagePlus size={18}/>添加图片</button><div className="save-controls"><span className="draft-status">{item.content||item.files.length?tempSaved?'已暂存于本机':'暂存中…':'⌘ / Ctrl + Enter'}</span><button className="primary-button" onClick={saveNote} disabled={!hydrated||saving||(!item.content.trim()&&!item.files.length)}>{saving?<LoaderCircle size={16} className="spin"/>:<Plus size={17}/>} {saving?'保存中':'保存记录'}</button></div></div>
      </div><div className="under-composer"><span>一句话就好，不必现在想明白。</span><span>{item.content.length?`${item.content.length} 字`:''}</span></div>
      <div className="section-heading"><h2>最近的{cat.name}记录 <span>{notes.filter(n=>n.category===category).length}</span></h2><button className="text-button" onClick={()=>{setView('review');setFilter(category);setReviewTab('all');}}>查看全部 <ArrowRight size={15}/></button></div>
      {loading?<div className="empty-state"><LoaderCircle className="spin" size={22}/><p>正在翻开手记…</p></div>:loadError?<div className="notice error">{loadError}<button className="text-button" onClick={reload}>重新读取</button></div>:recent.length?recent.map(n=>noteCard(n)):<div className="empty-state"><BookOpen size={28} strokeWidth={1.3}/><h3>这一页，还等着你的第一笔</h3><p>一次困惑、一个发现，都可以从这里开始。</p></div>}
-    </section><aside className="daily-aside"><div className="aside-heading"><span>今天的手记</span><span className="mini-rule"/></div><div className="today-number">{String(todayNotes.length).padStart(2,'0')}<span>条记录</span></div><p className="aside-copy">学到哪里，就记到哪里。</p><div className="today-categories">{categories.map((c,i)=>{const Icon=icons[i],count=todayNotes.filter(n=>n.category===c.id).length;return <button key={c.id} onClick={()=>changeCategory(c.id)} disabled={saving}><span><Icon size={16}/>{c.name}</span><span className={count?'has-count':'no-count'}>{count||'—'}</span></button>;})}</div><div className="aside-note"><Bookmark size={18}/><p>有些想法，<br/>过几天再看会更有意思。</p><button className="text-button" onClick={()=>{setView('review');setReviewTab('starred');setFilter('all');setDate('');}}>看看留待展开的记录 <ArrowUpRight size={15}/></button></div></aside></div>
+    </section><aside className="daily-aside"><div className="aside-heading"><span>今天的手记</span><span className="mini-rule"/></div><div className="today-number">{String(todayNotes.length).padStart(2,'0')}<span>条记录</span></div><p className="aside-copy">学到哪里，就记到哪里。</p><div className="today-categories">{categories.map((c,i)=>{const Icon=icons[i],count=todayNotes.filter(n=>n.category===c.id).length;return <button key={c.id} onClick={()=>changeCategory(c.id)} disabled={saving}><span><Icon size={16}/>{c.name}</span><span className={count?'has-count':'no-count'}>{count||'—'}</span></button>;})}</div><div className="aside-guide-card">
+     <div className="guide-card-header"><Sparkles size={15}/><span>记录指南 · 二选一</span></div>
+     <p className="guide-card-intro">不限字数，只记真实：</p>
+     <div className="guide-item">
+      <span className="guide-pill badge-error">A. 记一个卡点</span>
+      <p className="guide-desc">今天具体在哪里卡住了？</p>
+      <div className="guide-quote">“比如：看着眼熟，但一做题还是对不上意思。”</div>
+     </div>
+     <div className="guide-item">
+      <span className="guide-pill badge-success">B. 记一个发现</span>
+      <p className="guide-desc">今天用 AI 试了什么招数灵验了？</p>
+      <div className="guide-quote">“比如：把难词 4 个一组让 AI 生成剧情图，脑海里一下有画面了。”</div>
+     </div>
+     <p className="guide-foot">配 1~2 句话或 1 张截图即可交卷。</p>
+    </div>
+    <div className="aside-note"><Bookmark size={18}/><p>有些想法，<br/>过几天再看会更有意思。</p><button className="text-button" onClick={()=>{setView('review');setReviewTab('starred');setFilter('all');setDate('');}}>看看留待展开的记录 <ArrowUpRight size={15}/></button></div></aside></div>
    </TabsContent>
    <TabsContent value="review">
     <div className="page-heading"><div><p className="eyebrow">FROM MOMENTS TO STORIES</p><h1>回头看看，哪些值得讲。</h1><p className="heading-sub">挑出一条，或者几条有关联的记录，慢慢写成日记。</p></div><button className="outline-button" onClick={()=>setView('capture')}><Plus size={17}/>记一条新的</button></div>
