@@ -35,14 +35,14 @@ export default function Header({
             </div>
             <div className="brand-titles">
               <span className="brand-main">LightDiary</span>
-              <span className="brand-sub-badge">日记型内容系统</span>
+              <span className="brand-sub-badge">雅思日记 · AI备考试验</span>
             </div>
           </div>
 
           {/* Minimalist Dual-Track Pill */}
           <div className="status-pill-discreet" title="日记型低门槛练手感，16步干货型后台持续验证">
             <span className="status-dot-active"></span>
-            <span className="pill-text-primary">日记型先跑 · 练小红书手感</span>
+            <span className="pill-text-primary">0报班0外教 · 纯靠AI学雅思</span>
             <span className="pill-divider">/</span>
             <span className="pill-text-secondary">后台干货并行</span>
           </div>
