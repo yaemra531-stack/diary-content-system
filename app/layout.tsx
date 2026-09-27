@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "学间 · 学习手记",
-  description: "随手留下学习中的小发现，再慢慢整理成日记。",
+  title: "雅思日记 · 备考手记",
+  description: "0报班0外教，纯靠AI学雅思的真实试验手记。",
   other: {
     "codex-preview": "development",
   },

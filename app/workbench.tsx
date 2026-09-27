@@ -71,7 +71,7 @@ export default function Workbench({userId}:{userId:string}){
  </article>;}
  return <div className="app-shell"><Toaster position="top-center" theme={theme} richColors/>
   <Tabs value={view} onValueChange={setView} className="site-tabs">
-   <header className="topbar"><a className="brand" href="/" aria-label="学间首页"><span className="brand-mark"><NotebookPen size={22} strokeWidth={1.6}/></span><span>学间<span className="brand-description">学习手记</span></span></a><TabsList className="main-nav"><TabsTrigger value="capture"><PenLine size={16}/>随手记</TabsTrigger><TabsTrigger value="review"><BookOpen size={16}/>回看整理</TabsTrigger></TabsList><div className="topbar-actions">
+   <header className="topbar"><a className="brand" href="/" aria-label="雅思日记首页"><span className="brand-mark"><NotebookPen size={22} strokeWidth={1.6}/></span><span>雅思日记<span className="brand-description">备考手记</span></span></a><TabsList className="main-nav"><TabsTrigger value="capture"><PenLine size={16}/>随手记</TabsTrigger><TabsTrigger value="review"><BookOpen size={16}/>回看整理</TabsTrigger></TabsList><div className="topbar-actions">
     <button type="button" className="theme-toggle-btn" onClick={toggleTheme} title={theme==='dark'?'切换为日间模式':'切换为夜间模式'} aria-label="切换夜间模式">
      {theme==='dark'?<Sun size={15}/>:<Moon size={15}/>}
      <span className="theme-toggle-text">{theme==='dark'?'夜间':'日间'}</span>
