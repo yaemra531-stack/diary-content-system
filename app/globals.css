@@ -101,3 +101,464 @@ button,input,textarea { font:inherit; } button,a,input,textarea { -webkit-tap-hi
 @media(max-width:1050px) { .capture-grid { grid-template-columns:minmax(0,1fr) 200px; gap:28px; } .daily-aside { padding-left:22px; } .privacy { display:none; } .brand-description { font-size:12px; } .topbar { padding:0 5%; } .draft-status { display:none; } }
 @media(max-width:760px) { .topbar { height:auto; flex-wrap:wrap; padding:18px 5% 0; gap:19px; justify-content:center; } .brand { width:100%; font-size:23px; justify-content:center; } .brand-mark { width:34px; height:38px; } .brand-description { font-size:13px; } .main-nav { width:100%; height:47px!important; background:transparent; border:0; padding:0; gap:12px; border-radius:0; } .main-nav [data-slot=tabs-trigger] { border-radius:7px 7px 0 0; height:47px; padding:12px 15px; font-size:15px; } .main-nav [data-state=active] { background:#eaf0e4; box-shadow:none!important; } .main-wrap { width:90%; padding-top:29px; } .page-heading { margin-bottom:23px; align-items:flex-start; flex-wrap:wrap; gap:12px; } h1 { font-size:25px; letter-spacing:0; } .eyebrow { font-size:10px; margin-bottom:9px; } .date-label { padding:0; font-size:12px; } .capture-grid { display:block; } .daily-aside { display:none; } .category-list { grid-template-columns:repeat(6,minmax(0,1fr)); gap:3px; } .category-list [data-slot=tabs-trigger] { font-size:12px; height:62px; gap:8px; } .category-list [data-slot=tabs-trigger] svg { width:18px; height:18px; } .composer { padding:21px 20px 0; } .composer-title { font-size:21px; } .composer-top { margin-bottom:15px; } .composer textarea { min-height:176px; font-size:16px; } .composer-footer { padding:15px 0; } .attach-button { font-size:13px; } .primary-button { padding:10px 13px; font-size:14px; } .under-composer { font-size:12px; } .section-heading { margin-top:30px; } .section-heading h2 { font-size:16px; } .note-card { padding:16px 18px; } .note-content { font-size:16px; } .review-grid { grid-template-columns:1fr; gap:13px; } .review-tabs { gap:3px; } .review-tabs [data-slot=tabs-trigger] { padding:9px 8px; font-size:14px; } .review-toolbar { gap:5px; } .review-tabs span { display:none; } .filter-count { display:none; } .filters { gap:8px; } .filter-select { min-width:120px; } .date-filter { padding:8px; } .date-filter input { max-width:140px; } .selection-bar { max-width:94%; width:max-content; bottom:15px; gap:10px; padding:10px 12px; font-size:13px; } .selection-bar .primary-button { font-size:13px; } .site-footer { font-size:11px; flex-wrap:wrap; gap:8px; padding-bottom:20px; margin-top:5px; } .heading-sub { font-size:13px; margin-top:9px; } .resume-banner { align-items:flex-start; gap:8px; padding:12px; } .resume-banner>span { font-size:13px; } .diary-dialog { width:calc(100% - 24px); max-width:calc(100% - 24px)!important; padding:24px 20px; max-height:92dvh; } .diary-dialog [data-slot=dialog-title] { font-size:23px; } .diary-columns { grid-template-columns:1fr; gap:24px; } .source-panel { padding:0 0 20px; border-right:0; border-bottom:1px solid #dde5d4; } .source-note { max-height:220px; overflow:auto; } .diary-actions { flex-wrap:wrap; } .row { gap:8px; } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; } }
+
+/* ========================================================
+   夜间模式 (Dark Mode) - 温润暗调纸质美学
+   ======================================================== */
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #dce4d5;
+  background: #fffefb;
+  color: #4b6255;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.theme-toggle-btn:hover {
+  background: #eaf0e5;
+  color: #244b36;
+  border-color: #c7d5bf;
+}
+
+.theme-toggle-btn svg {
+  color: #557962;
+}
+
+.dark {
+  --background: #111513;
+  --foreground: #dce5df;
+  --card: #181f1b;
+  --card-foreground: #dce5df;
+  --popover: #181f1b;
+  --popover-foreground: #dce5df;
+  --primary: #458066;
+  --primary-foreground: #ffffff;
+  --secondary: #1f2722;
+  --secondary-foreground: #dce5df;
+  --muted: #1e2621;
+  --muted-foreground: #8a998f;
+  --accent: #232d27;
+  --accent-foreground: #dce5df;
+  --destructive: #ff5c5c;
+  --border: #28342c;
+  --input: #28342c;
+  --ring: #458066;
+  color-scheme: dark;
+}
+
+html.dark {
+  background-color: #111513;
+  color: #dce5df;
+}
+
+html.dark body {
+  background-color: #111513;
+  color: #dce5df;
+}
+
+.dark .theme-toggle-btn {
+  background: #1a221d;
+  border-color: #2d3b31;
+  color: #9ab3a4;
+}
+
+.dark .theme-toggle-btn:hover {
+  background: #233027;
+  color: #cde4d6;
+  border-color: #3d5043;
+}
+
+.dark .theme-toggle-btn svg {
+  color: #83c4a0;
+}
+
+/* 顶部栏 */
+.dark .topbar {
+  background: #111513;
+  border-bottom-color: #232c26;
+}
+
+.dark .brand {
+  color: #e2eae4;
+}
+
+.dark .brand-mark {
+  background: #1d2721;
+  border-color: #314237;
+  color: #72b992;
+}
+
+.dark .brand-description {
+  color: #7b8e82;
+}
+
+.dark .main-nav {
+  background: #171f1a;
+  border-color: #28362d;
+}
+
+.dark .main-nav [data-slot=tabs-trigger] {
+  color: #8c9e93;
+}
+
+.dark .main-nav [data-state=active] {
+  background: #243229;
+  color: #a4debe;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.dark .privacy {
+  color: #6d8073;
+}
+
+/* 主内容区 */
+.dark .eyebrow {
+  color: #6a8072;
+}
+
+.dark h1 {
+  color: #e4ece6;
+}
+
+.dark .date-label {
+  color: #829487;
+}
+
+/* 6 大板块切换按钮 */
+.dark .category-list [data-slot=tabs-trigger] {
+  background: #171d19;
+  border-color: #26332a;
+  color: #879a8e;
+}
+
+.dark .category-list [data-slot=tabs-trigger]:hover {
+  background: #1e2721;
+  color: #abd4be;
+  border-color: #334538;
+}
+
+.dark .category-list [data-state=active] {
+  background: #213026;
+  border-color: #385040;
+  color: #9fe2bd;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+/* 输入框卡片 */
+.dark .composer {
+  background: #161c18;
+  border-color: #26332a;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.dark .small-label {
+  color: #73877b;
+}
+
+.dark .paper-index {
+  color: #55695c;
+  border-color: #29362e;
+}
+
+.dark .composer-title {
+  color: #dbe5de;
+}
+
+.dark .composer textarea {
+  color: #e2ede5;
+  background: transparent;
+}
+
+.dark .composer textarea::placeholder {
+  color: #5e7365;
+}
+
+.dark .draft-status {
+  color: #728679;
+}
+
+.dark .composer-footer {
+  border-top-color: #232c26;
+}
+
+.dark .attach-button {
+  color: #87a493;
+}
+
+.dark .attach-button:hover {
+  background: #1f2923;
+  color: #b7dbca;
+}
+
+.dark .primary-button {
+  background: #356750;
+  color: #ffffff;
+}
+
+.dark .primary-button:hover:not(:disabled) {
+  background: #3d795e;
+}
+
+.dark .under-composer {
+  color: #6f8376;
+}
+
+/* 侧边信息栏 */
+.dark .daily-aside {
+  border-left-color: #232c26;
+}
+
+.dark .aside-heading {
+  color: #889e90;
+}
+
+.dark .mini-rule {
+  background: #232c26;
+}
+
+.dark .today-number {
+  color: #6fb58f;
+}
+
+.dark .today-number span {
+  color: #758c7e;
+}
+
+.dark .aside-copy {
+  color: #778b7e;
+}
+
+.dark .today-categories {
+  border-top-color: #232c26;
+}
+
+.dark .today-categories button {
+  color: #8aa092;
+}
+
+.dark .today-categories button:hover {
+  background: #1c241f;
+  color: #cbe3d5;
+}
+
+.dark .no-count {
+  color: #536458;
+}
+
+.dark .has-count {
+  color: #87d1aa;
+}
+
+.dark .aside-note {
+  border-top-color: #232c26;
+  color: #788d7f;
+}
+
+.dark .aside-note p {
+  color: #9cb5a4;
+}
+
+.dark .aside-note .text-button {
+  color: #7fa38e;
+}
+
+/* 笔记卡片 */
+.dark .note-card {
+  background: #161c18;
+  border-color: #26332a;
+}
+
+.dark .note-card:hover {
+  border-color: #3b4e40;
+}
+
+.dark .note-card.is-selected {
+  border-color: #4b8567;
+  box-shadow: 0 0 0 1px #4b8567;
+}
+
+.dark .category-label {
+  background: #1f2a23;
+  color: #8acbaa;
+}
+
+.dark time {
+  color: #718578;
+}
+
+.dark .icon-button {
+  color: #768a7c;
+}
+
+.dark .icon-button:hover {
+  background: #1f2722;
+  color: #a4ceb5;
+}
+
+.dark .bookmarked {
+  color: #77bf96;
+}
+
+.dark .note-content {
+  color: #d6e3da;
+}
+
+.dark .note-bottom {
+  border-top-color: #222b25;
+}
+
+.dark .muted {
+  color: #708477;
+}
+
+.dark .note-bottom .text-button {
+  color: #84b79c;
+}
+
+.dark .attachment img,
+.dark .note-images img {
+  border-color: #2b392f;
+}
+
+/* 回看整理页 */
+.dark .review-toolbar {
+  border-bottom-color: #242e27;
+}
+
+.dark .review-tabs [data-slot=tabs-trigger] {
+  color: #7f9386;
+}
+
+.dark .review-tabs [data-state=active] {
+  background: #212e25;
+  color: #9fe2bd;
+}
+
+.dark .filter-select,
+.dark .date-filter {
+  background: #161c18;
+  border-color: #26332a;
+  color: #8ea394;
+}
+
+.dark .date-filter input {
+  color: #a6c4b1;
+}
+
+.dark .filter-count {
+  color: #758a7d;
+}
+
+.dark .heading-sub {
+  color: #798d80;
+}
+
+.dark .resume-banner {
+  background: #1b261f;
+  border-color: #29382e;
+  color: #9ec5b0;
+}
+
+.dark .empty-state {
+  border-color: #26342b;
+  color: #6d8274;
+}
+
+.dark .empty-state h3 {
+  color: #8ba594;
+}
+
+.dark .empty-state p {
+  color: #768c7e;
+}
+
+/* 底部操作浮条 */
+.dark .selection-bar {
+  background: #1a221d;
+  border-color: #2f3f33;
+  color: #d5e3da;
+  box-shadow: 0 10px 45px rgba(0, 0, 0, 0.6);
+}
+
+/* 日记草稿弹窗 & 图片弹窗 */
+.dark .diary-dialog {
+  background: #131815;
+  border-color: #26342b;
+  color: #d8e5dc;
+}
+
+.dark .diary-dialog [data-slot=dialog-title] {
+  color: #e4eee6;
+}
+
+.dark .diary-dialog [data-slot=dialog-description] {
+  color: #799081;
+}
+
+.dark .source-panel {
+  border-right-color: #232d26;
+}
+
+.dark .source-panel h3 {
+  color: #88a291;
+}
+
+.dark .source-note {
+  border-left-color: #385341;
+}
+
+.dark .source-note p {
+  color: #c4d6c8;
+}
+
+.dark .helper-text {
+  color: #748a7b;
+}
+
+.dark .diary-writing label {
+  color: #88b79b;
+}
+
+.dark .diary-writing input,
+.dark .diary-writing textarea,
+.dark .edit-textarea {
+  background: #181f1b;
+  border-color: #27342c;
+  color: #d9e6de;
+}
+
+.dark .diary-writing input:focus,
+.dark .diary-writing textarea:focus,
+.dark .edit-textarea:focus {
+  border-color: #4b8267;
+}
+
+.dark .diary-writing input::placeholder,
+.dark .diary-writing textarea::placeholder {
+  color: #5c7264;
+}
+
+/* 页脚 */
+.dark .site-footer {
+  border-top-color: #232c26;
+  color: #697c70;
+}
+
+/* 移动端适配 */
+@media(max-width:760px) {
+  .dark .main-nav [data-state=active] {
+    background: #243229;
+  }
+}

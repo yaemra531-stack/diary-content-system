@@ -1,6 +1,6 @@
 "use client";
 import {useEffect,useRef,useState,useCallback} from 'react';
-import {BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb,Plus,ArrowUpRight,ArrowRight,ImagePlus,Bookmark,Check,NotebookPen,CloudCheck,X,LoaderCircle,Copy,RefreshCw,CalendarDays,LockKeyhole} from 'lucide-react';
+import {BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb,Plus,ArrowUpRight,ArrowRight,ImagePlus,Bookmark,Check,NotebookPen,CloudCheck,X,LoaderCircle,Copy,RefreshCw,CalendarDays,LockKeyhole,Sun,Moon} from 'lucide-react';
 import {Tabs,TabsList,TabsTrigger,TabsContent} from '@/components/ui/tabs';
 import {Dialog,DialogContent,DialogTitle,DialogDescription} from '@/components/ui/dialog';
 import {Checkbox} from '@/components/ui/checkbox';
@@ -23,6 +23,29 @@ export default function Workbench({userId}:{userId:string}){
  const [editor,setEditor]=useState<Editor|null>(null),[editorOpen,setEditorOpen]=useState(false),[editorSaving,setEditorSaving]=useState(false),[editorSaved,setEditorSaved]=useState(false);
  const [editNote,setEditNote]=useState<Note|null>(null),[editText,setEditText]=useState(''),[editSaving,setEditSaving]=useState(false),[image,setImage]=useState<string|null>(null),[today,setToday]=useState('');
  const [pendingStars,setPendingStars]=useState<string[]>([]);
+ const [theme,setTheme]=useState<'light'|'dark'>('light');
+ useEffect(()=>{
+  try {
+   const saved=localStorage.getItem('xuejian_theme');
+   if(saved==='dark'||(!saved&&window.matchMedia('(prefers-color-scheme: dark)').matches)){
+    setTheme('dark');
+    document.documentElement.classList.add('dark');
+   }else{
+    setTheme('light');
+    document.documentElement.classList.remove('dark');
+   }
+  }catch(e){}
+ },[]);
+ const toggleTheme=()=>{
+  const next=theme==='dark'?'light':'dark';
+  setTheme(next);
+  try{localStorage.setItem('xuejian_theme',next);}catch(e){}
+  if(next==='dark'){
+   document.documentElement.classList.add('dark');
+  }else{
+   document.documentElement.classList.remove('dark');
+  }
+ };
  const fileInput=useRef<HTMLInputElement>(null),textInput=useRef<HTMLTextAreaElement>(null),requestLock=useRef(false);
  const cat=categories.find(c=>c.id===category)!,item=pending[category]??{id:'',content:'',files:[]};
  const reload=useCallback(async()=>{try{const [n,d]=await Promise.all([api<{notes:Note[]}>('/api/notes'),api<{drafts:Draft[]}>('/api/drafts')]);setNotes(n.notes);setDrafts(d.drafts);setLoadError('');}catch(e){setLoadError(errorText(e));}finally{setLoading(false);}},[]);
@@ -46,9 +69,15 @@ export default function Workbench({userId}:{userId:string}){
   {note.content&&<p className="note-content">{note.content}</p>}{note.images.length>0&&<div className="note-images">{note.images.map(i=><button key={i.id} onClick={()=>setImage(`/api/images/${i.id}`)} aria-label={`查看图片 ${i.name}`}><img src={`/api/images/${i.id}`} alt={i.name} loading="lazy"/></button>)}</div>}
   <div className="note-bottom"><button className="text-button muted" onClick={()=>{setEditNote(note);setEditText(note.content);}}>编辑记录</button><button className="text-button" onClick={()=>startDiary([note.id])}>拿来写日记 <ArrowUpRight size={15}/></button></div>
  </article>;}
- return <div className="app-shell"><Toaster position="top-center" theme="light" richColors/>
+ return <div className="app-shell"><Toaster position="top-center" theme={theme} richColors/>
   <Tabs value={view} onValueChange={setView} className="site-tabs">
-   <header className="topbar"><a className="brand" href="/" aria-label="学间首页"><span className="brand-mark"><NotebookPen size={22} strokeWidth={1.6}/></span><span>学间<span className="brand-description">学习手记</span></span></a><TabsList className="main-nav"><TabsTrigger value="capture"><PenLine size={16}/>随手记</TabsTrigger><TabsTrigger value="review"><BookOpen size={16}/>回看整理</TabsTrigger></TabsList><span className="privacy"><LockKeyhole size={14}/>只属于你的手记</span></header>
+   <header className="topbar"><a className="brand" href="/" aria-label="学间首页"><span className="brand-mark"><NotebookPen size={22} strokeWidth={1.6}/></span><span>学间<span className="brand-description">学习手记</span></span></a><TabsList className="main-nav"><TabsTrigger value="capture"><PenLine size={16}/>随手记</TabsTrigger><TabsTrigger value="review"><BookOpen size={16}/>回看整理</TabsTrigger></TabsList><div className="topbar-actions">
+    <button type="button" className="theme-toggle-btn" onClick={toggleTheme} title={theme==='dark'?'切换为日间模式':'切换为夜间模式'} aria-label="切换夜间模式">
+     {theme==='dark'?<Sun size={15}/>:<Moon size={15}/>}
+     <span className="theme-toggle-text">{theme==='dark'?'夜间':'日间'}</span>
+    </button>
+    <span className="privacy"><LockKeyhole size={14}/>只属于你的手记</span>
+   </div></header>
    <main className="main-wrap">
    {storageError&&<div className="notice error">本机暂存不可用，请及时点击保存，并保持页面打开。</div>}
    <TabsContent value="capture">
