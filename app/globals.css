@@ -562,3 +562,58 @@ html.dark body {
     background: #243229;
   }
 }
+
+/* 极简交卷标准提醒栏 */
+.standard-guide-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #edf3e8;
+  border: 1px solid #dbe6d3;
+  padding: 8px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #3b5742;
+  transition: all 0.2s ease;
+}
+
+.standard-badge {
+  background: #395c43;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.standard-text {
+  line-height: 1.5;
+  color: #4b6853;
+}
+
+.standard-text strong {
+  color: #21432c;
+  font-weight: 600;
+}
+
+.dark .standard-guide-banner {
+  background: #19241c;
+  border-color: #2c3e30;
+  color: #a4ceb2;
+}
+
+.dark .standard-badge {
+  background: #335940;
+  color: #d8f3e2;
+}
+
+.dark .standard-text {
+  color: #9ec5ad;
+}
+
+.dark .standard-text strong {
+  color: #c4ead2;
+}
