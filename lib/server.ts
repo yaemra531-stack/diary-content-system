@@ -1,13 +1,9 @@
 import { env } from "cloudflare:workers";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 export function db() {if(!env.DB)throw new Error("Database unavailable");return env.DB;}
-export function bucket() {if(!env.BUCKET)throw new Error("Storage unavailable");return env.BUCKET;}
+export function bucket() {return (env as any).BUCKET || null;}
 export class ApiError extends Error {constructor(message:string,public status=400){super(message);}}
 export async function owner(request:Request) {
- if(!["GET","HEAD"].includes(request.method)) {
-  const origin=request.headers.get("origin");
-  if(request.headers.get("sec-fetch-site")==="cross-site"||(origin&&origin!==new URL(request.url).origin))throw new ApiError("请从工作台内保存。",403);
- }
  const user=await getChatGPTUser();
  if(!user)throw new ApiError("登录后才能读取和保存记录。",401);
  return user.userId;

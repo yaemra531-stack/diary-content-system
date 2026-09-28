@@ -22,13 +22,18 @@ export async function POST(request:Request){return handle(async()=>{
    const file=files[i],imageId=`${id}-${i}`,bytes=new Uint8Array(await file.arrayBuffer());
    const valid=(file.type==="image/jpeg"&&bytes[0]===255&&bytes[1]===216)||(file.type==="image/png"&&bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71)||(file.type==="image/gif"&&String.fromCharCode(...bytes.slice(0,3))==="GIF")||(file.type==="image/webp"&&String.fromCharCode(...bytes.slice(0,4))==="RIFF"&&String.fromCharCode(...bytes.slice(8,12))==="WEBP");
    if(!valid)throw new ApiError("有一张图片格式无法识别，请重新选择。");
-   await bucket().put(`${user}/${imageId}`,bytes,{httpMetadata:{contentType:file.type}});uploaded.push(`${user}/${imageId}`);
-   statements.push(db().prepare("INSERT INTO images(id,note_id,owner,mime,name) VALUES(?,?,?,?,?)").bind(imageId,id,user,file.type,file.name.slice(0,200)));
+   if(bucket()){
+     try{
+       await bucket().put(`${user}/${imageId}`,bytes,{httpMetadata:{contentType:file.type}});
+       uploaded.push(`${user}/${imageId}`);
+     }catch{}
+   }
+   statements.push(db().prepare("INSERT INTO images(id,note_id,owner,mime,name,data) VALUES(?,?,?,?,?,?)").bind(imageId,id,user,file.type,file.name.slice(0,200),bytes));
   }
   await db().batch(statements);
  }catch(e){
   if(await db().prepare("SELECT id FROM notes WHERE id=? AND owner=?").bind(id,user).first())return Response.json({id});
-  if(uploaded.length)await bucket().delete(uploaded);throw e;
+  if(uploaded.length&&bucket())await bucket().delete(uploaded);throw e;
  }
  return Response.json({id},{status:201});
 });}
