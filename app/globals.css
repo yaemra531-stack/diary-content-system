@@ -743,3 +743,271 @@ html.dark body {
 .dark .guide-foot {
   color: #6d8475;
 }
+
+/* ========================================================
+   导出 Markdown 按钮与弹窗样式 (Export Markdown Dialog)
+   ======================================================== */
+
+.review-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.export-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  border: 1px solid #d4ded0;
+  background: #fbfdf9;
+  color: #3b503e;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.export-trigger-btn:hover {
+  background: #eef5ea;
+  border-color: #b7ccb1;
+  color: #26382a;
+}
+
+.export-dialog {
+  max-width: 680px!important;
+  width: calc(100% - 40px);
+  max-height: 90dvh;
+  overflow-y: auto;
+  background: #fdfef9;
+  padding: 26px 28px;
+  gap: 16px;
+}
+
+.export-dialog-title {
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 22px;
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+
+.export-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.export-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #eaf0e4;
+  color: #2e4a36;
+}
+
+.export-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.export-scope-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.export-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5849;
+}
+
+.scope-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.scope-pill {
+  padding: 5px 12px;
+  font-size: 13px;
+  border-radius: 20px;
+  border: 1px solid #dce4d3;
+  background: #fff;
+  color: #556653;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.scope-pill:hover {
+  border-color: #b8ccb0;
+  background: #f6faf2;
+}
+
+.scope-pill.active {
+  background: #2e4a36;
+  border-color: #2e4a36;
+  color: #ffffff;
+}
+
+.custom-date-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid #dce4d3;
+  border-radius: 6px;
+  background: #fff;
+  width: fit-content;
+  font-size: 13px;
+}
+
+.custom-date-picker input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  color: inherit;
+}
+
+.export-option-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #4b5849;
+  cursor: pointer;
+}
+
+.export-stats-badge {
+  font-size: 12px;
+  color: #798a75;
+  background: #edf3e7;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.export-preview-wrap {
+  position: relative;
+}
+
+.export-preview-textarea {
+  width: 100%;
+  height: 220px;
+  padding: 12px 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  border: 1px solid #dce4d3;
+  border-radius: 6px;
+  background: #fafbf7;
+  color: #2d382c;
+  resize: vertical;
+}
+
+.export-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 6px;
+}
+
+/* 夜间模式支持 (Dark Mode) */
+.dark .export-trigger-btn {
+  border-color: #28372d;
+  background: #19221b;
+  color: #9fe2bd;
+}
+
+.dark .export-trigger-btn:hover {
+  background: #202d24;
+  border-color: #384e40;
+  color: #b8f2d2;
+}
+
+.dark .export-dialog {
+  background: #131815;
+  border-color: #26342b;
+  color: #d8e5dc;
+}
+
+.dark .export-dialog [data-slot=dialog-title] {
+  color: #e4eee6;
+}
+
+.dark .export-dialog [data-slot=dialog-description] {
+  color: #799081;
+}
+
+.dark .export-title-icon {
+  background: #1d2a20;
+  color: #9fe2bd;
+}
+
+.dark .export-label {
+  color: #9ab0a1;
+}
+
+.dark .scope-pill {
+  background: #19221b;
+  border-color: #2b3a2f;
+  color: #9db2a4;
+}
+
+.dark .scope-pill:hover {
+  background: #212e24;
+  border-color: #3a4f40;
+}
+
+.dark .scope-pill.active {
+  background: #2b6140;
+  border-color: #2b6140;
+  color: #e5fbee;
+}
+
+.dark .custom-date-picker {
+  background: #18201a;
+  border-color: #2b3a2f;
+  color: #d8e5dc;
+}
+
+.dark .checkbox-label {
+  color: #9ab0a1;
+}
+
+.dark .export-stats-badge {
+  background: #1c271e;
+  color: #84a28b;
+}
+
+.dark .export-preview-textarea {
+  background: #101512;
+  border-color: #253329;
+  color: #d1dfd5;
+}
+
+@media(max-width:760px) {
+  .export-trigger-btn span {
+    display: inline;
+  }
+  .export-dialog {
+    width: calc(100% - 24px);
+    max-width: calc(100% - 24px)!important;
+    padding: 22px 18px;
+  }
+}

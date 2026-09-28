@@ -1,13 +1,13 @@
 "use client";
 import {useEffect,useRef,useState,useCallback} from 'react';
-import {BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb,Plus,ArrowUpRight,ArrowRight,ImagePlus,Bookmark,Check,NotebookPen,CloudCheck,X,LoaderCircle,Copy,RefreshCw,CalendarDays,LockKeyhole,Sun,Moon,Sparkles} from 'lucide-react';
+import {BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb,Plus,ArrowUpRight,ArrowRight,ImagePlus,Bookmark,Check,NotebookPen,CloudCheck,X,LoaderCircle,Copy,RefreshCw,CalendarDays,LockKeyhole,Sun,Moon,Sparkles,Download,FileDown} from 'lucide-react';
 import {Tabs,TabsList,TabsTrigger,TabsContent} from '@/components/ui/tabs';
 import {Dialog,DialogContent,DialogTitle,DialogDescription} from '@/components/ui/dialog';
 import {Checkbox} from '@/components/ui/checkbox';
 import {Select,SelectTrigger,SelectValue,SelectContent,SelectItem} from '@/components/ui/select';
 import {Toaster} from '@/components/ui/sonner';
 import {toast} from 'sonner';
-import {categories,categoryName,diaryPrompt,type Category,type Note,type Draft} from '@/lib/diary';
+import {categories,categoryName,diaryPrompt,exportNotesToMarkdown,type Category,type Note,type Draft} from '@/lib/diary';
 import {readPending,writePending,type PendingNotes} from '@/lib/pending';
 const icons=[BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb];
 type Editor={id:string;title:string;content:string;sourceIds:string[]};
@@ -24,6 +24,8 @@ export default function Workbench({userId}:{userId:string}){
  const [editNote,setEditNote]=useState<Note|null>(null),[editText,setEditText]=useState(''),[editSaving,setEditSaving]=useState(false),[image,setImage]=useState<string|null>(null),[today,setToday]=useState('');
  const [pendingStars,setPendingStars]=useState<string[]>([]);
  const [theme,setTheme]=useState<'light'|'dark'>('light');
+ const [exportOpen,setExportOpen]=useState(false),[exportScope,setExportScope]=useState<'today'|'yesterday'|'all'|'starred'|'custom'>('today');
+ const [exportCustomDate,setExportCustomDate]=useState(()=>localDate(new Date().toISOString())),[includeAgentPrompt,setIncludeAgentPrompt]=useState(true);
  useEffect(()=>{
   try {
    const saved=localStorage.getItem('xuejian_theme');
@@ -57,6 +59,30 @@ export default function Workbench({userId}:{userId:string}){
  function addFiles(files:File[]){const all=[...item.files,...files];if(all.length>6||all.reduce((n,f)=>n+f.size,0)>24*1024*1024||files.some(f=>f.size>8*1024*1024||!['image/jpeg','image/png','image/webp','image/gif'].includes(f.type))){toast.error('最多 6 张 JPG、PNG、WebP 或 GIF，每张不超过 8 MB，总计不超过 24 MB。');return;}updateItem({files:all});}
  async function saveNote(){if(requestLock.current||(!item.content.trim()&&!item.files.length))return;requestLock.current=true;setSaving(true);const savingCat=category;try{const body=new FormData();body.set('id',item.id||crypto.randomUUID());body.set('category',category);body.set('content',item.content);item.files.forEach(f=>body.append('images',f));await api('/api/notes',{method:'POST',body});setPending(p=>{const next={...p};delete next[savingCat];return next;});toast.success('这一刻，留下来了');await reload();textInput.current?.focus();}catch(e){toast.error(errorText(e));}finally{setSaving(false);requestLock.current=false;}}
  async function star(note:Note){setPendingStars(p=>[...p,note.id]);try{await api('/api/notes',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:note.id,starred:!note.starred})});setNotes(p=>p.map(n=>n.id===note.id?{...n,starred:note.starred?0:1}:n));}catch(e){toast.error(errorText(e));}finally{setPendingStars(p=>p.filter(id=>id!==note.id));}}
+ const exportNotes = (()=>{
+  const todayStr=today?localDate(today):localDate(new Date().toISOString());
+  const yest=new Date();yest.setDate(yest.getDate()-1);const yestStr=localDate(yest.toISOString());
+  if(exportScope==='today')return notes.filter(n=>localDate(n.created_at)===todayStr);
+  if(exportScope==='yesterday')return notes.filter(n=>localDate(n.created_at)===yestStr);
+  if(exportScope==='starred')return notes.filter(n=>n.starred);
+  if(exportScope==='custom')return notes.filter(n=>!exportCustomDate||localDate(n.created_at)===exportCustomDate);
+  return notes;
+ })();
+ const exportDateLabel = exportScope==='today'?(today?localDate(today):localDate(new Date().toISOString())):exportScope==='yesterday'?(()=>{const d=new Date();d.setDate(d.getDate()-1);return localDate(d.toISOString());})():exportScope==='custom'?exportCustomDate:'全部历史';
+ const generatedMarkdown = exportNotesToMarkdown(exportNotes,{dateStr:exportDateLabel,includePrompt:includeAgentPrompt});
+ function downloadMarkdown(){
+  const blob=new Blob([generatedMarkdown],{type:'text/markdown;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const filename=`${exportDateLabel}-雅思备考素材池.md`;
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast.success(`已下载 ${filename}`);
+ }
+ async function copyExportMarkdown(){
+  try{await navigator.clipboard.writeText(generatedMarkdown);toast.success('已复制 Markdown 到剪贴板，可直接发给 Agent！');}
+  catch{toast.error('浏览器未允许剪贴板权限，请在下方文本框中手动选择复制。');}
+ }
  function startDiary(ids:string[]){if(ids.length>30){toast.error('一次最多整理 30 条记录。');return;}if(editor&&!editorSaved&&(editor.content||editor.title)){setEditorOpen(true);toast.info('先完成或保存正在写的这篇日记，再整理新的素材。');return;}setEditor({id:crypto.randomUUID(),title:'',content:'',sourceIds:ids});setEditorSaved(false);setEditorOpen(true);}
  async function saveDiary(){if(!editor||editorSaving)return;setEditorSaving(true);try{await api('/api/drafts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(editor)});setEditorSaved(true);toast.success('日记草稿已保存，原始记录也还在');await reload();}catch(e){toast.error(errorText(e));}finally{setEditorSaving(false);}}
  const changeEditor=(patch:Partial<Editor>)=>{setEditor(e=>e?{...e,...patch}:e);setEditorSaved(false);};
@@ -110,7 +136,7 @@ export default function Workbench({userId}:{userId:string}){
    <TabsContent value="review">
     <div className="page-heading"><div><p className="eyebrow">FROM MOMENTS TO STORIES</p><h1>回头看看，哪些值得讲。</h1><p className="heading-sub">挑出一条，或者几条有关联的记录，慢慢写成日记。</p></div><button className="outline-button" onClick={()=>setView('capture')}><Plus size={17}/>记一条新的</button></div>
     {editor&&!editorOpen&&<div className="resume-banner"><span><PenLine size={16}/>有一篇日记可以接着写</span><button className="text-button" onClick={()=>setEditorOpen(true)}>继续整理 <ArrowRight size={15}/></button></div>}
-    <div className="review-toolbar"><Tabs value={reviewTab} onValueChange={setReviewTab}><TabsList className="review-tabs"><TabsTrigger value="all">全部记录 <span>{notes.length}</span></TabsTrigger><TabsTrigger value="starred">留待展开 <span>{notes.filter(n=>n.starred).length}</span></TabsTrigger><TabsTrigger value="drafts">日记草稿 <span>{drafts.length}</span></TabsTrigger></TabsList></Tabs><button className="icon-button" onClick={reload} aria-label="刷新记录"><RefreshCw size={17}/></button></div>
+    <div className="review-toolbar"><Tabs value={reviewTab} onValueChange={setReviewTab}><TabsList className="review-tabs"><TabsTrigger value="all">全部记录 <span>{notes.length}</span></TabsTrigger><TabsTrigger value="starred">留待展开 <span>{notes.filter(n=>n.starred).length}</span></TabsTrigger><TabsTrigger value="drafts">日记草稿 <span>{drafts.length}</span></TabsTrigger></TabsList></Tabs><div className="review-toolbar-actions"><button type="button" className="export-trigger-btn" onClick={()=>setExportOpen(true)} title="汇总并导出 Markdown 素材"><Download size={14}/><span>导出 Markdown</span></button><button className="icon-button" onClick={reload} aria-label="刷新记录" title="刷新记录"><RefreshCw size={17}/></button></div></div>
     {reviewTab!=='drafts'&&<div className="filters"><Select value={filter} onValueChange={setFilter}><SelectTrigger aria-label="筛选板块" className="filter-select"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">全部板块</SelectItem>{categories.map(c=><SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><label className="date-filter"><CalendarDays size={16}/><input aria-label="筛选日期" type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>{(date||filter!=='all')&&<button className="text-button muted" onClick={()=>{setDate('');setFilter('all');}}>清除筛选</button>}<span className="filter-count">{filtered.length} 条记录</span></div>}
     {loadError?<div className="notice error">{loadError}<button className="text-button" onClick={reload}>重新读取</button></div>:loading?<div className="empty-state">正在读取…</div>:reviewTab==='drafts'?drafts.length?<div className="review-grid">{drafts.map(d=><article className="note-card diary-card" key={d.id}><div className="note-meta"><span className="category-label">日记草稿</span><time>{new Date(d.updated_at).toLocaleDateString('zh-CN')}</time></div><h2>{d.title}</h2><p className="note-content">{d.content}</p><button className="text-button" onClick={()=>{if(editor&&!editorSaved&&editor.id!==d.id&&(editor.content||editor.title)){setEditorOpen(true);toast.info('先保存正在写的日记，再打开另一篇。');return;}setEditor({id:d.id,title:d.title,content:d.content,sourceIds:JSON.parse(d.source_ids)});setEditorSaved(true);setEditorOpen(true);}}>继续编辑 <ArrowUpRight size={15}/></button></article>)}</div>:<div className="empty-state"><NotebookPen size={30}/><h3>日记，从一条真实记录开始</h3><p>到「全部记录」里选一条，点击「拿来写日记」。</p></div>:filtered.length?<div className="review-grid">{filtered.map(n=>noteCard(n,true))}</div>:<div className="empty-state"><Bookmark size={28}/><h3>{reviewTab==='starred'?'还没有留待展开的记录':'这里还没有记录'}</h3><p>{reviewTab==='starred'?'遇到想多聊几句的记录，点一下右上角的书签。':'换个筛选条件，或先去记下今天的一个想法。'}</p></div>}
     {selected.length>0&&reviewTab!=='drafts'&&<div className="selection-bar"><span>已选 {selected.length} 条</span><button className="text-button" onClick={()=>setSelected([])}>取消选择</button><button className="primary-button" onClick={()=>startDiary(selected)}>一起写成日记 <ArrowRight size={16}/></button></div>}
@@ -120,5 +146,31 @@ export default function Workbench({userId}:{userId:string}){
   <Dialog open={editorOpen} onOpenChange={setEditorOpen}><DialogContent className="diary-dialog"><DialogTitle>把这一刻，写成日记</DialogTitle><DialogDescription>原始记录会保留。可以自己写，也可以复制素材给 AI，聊完再把草稿放回来。</DialogDescription><div className="diary-columns"><section className="source-panel"><h3>原始记录 · {sourceNotes.length} 条</h3>{sourceNotes.map(n=><div className="source-note" key={n.id}><span className="small-label">{categoryName(n.category)}</span><p>{n.content||'一条图片记录'}</p>{n.images.map(i=><img key={i.id} src={`/api/images/${i.id}`} alt={i.name}/>)}</div>)}<button className="outline-button" onClick={()=>copy(diaryPrompt(sourceNotes))}><Copy size={16}/>复制素材和整理提示</button><p className="helper-text">粘贴到你正在使用的 AI 对话里；图片需要另行附上。</p></section><section className="diary-writing"><label htmlFor="diary-title">日记标题 <span className="muted">（可选）</span></label><input id="diary-title" placeholder="给这段经历起个名字" maxLength={100} value={editor?.title??''} onChange={e=>changeEditor({title:e.target.value})} disabled={editorSaving}/><label htmlFor="diary-content">日记正文</label><textarea id="diary-content" placeholder="当时发生了什么？你做了什么？后来有什么变化？\n\n像跟朋友聊天一样，先写几句话。" maxLength={20000} value={editor?.content??''} onChange={e=>changeEditor({content:e.target.value})} disabled={editorSaving}/><div className="diary-actions"><button className="text-button" disabled={!editor?.content} onClick={()=>copy([editor?.title,editor?.content].filter(Boolean).join('\n\n'))}><Copy size={16}/>复制正文</button><button className="primary-button" disabled={!editor?.content.trim()||editorSaving} onClick={saveDiary}>{editorSaving?<LoaderCircle size={16} className="spin"/>:<Check size={16}/>}保存日记草稿</button></div><p className="helper-text">{editorSaved?'已保存到账号，可在其他设备继续。':'未保存的输入会暂存于本机，关闭此窗口后可以继续。'}</p></section></div></DialogContent></Dialog>
   <Dialog open={!!editNote} onOpenChange={open=>{if(!open&&!editSaving)setEditNote(null);}}><DialogContent><DialogTitle>编辑记录</DialogTitle><DialogDescription>修改这条记录的文字，保留原有图片和记录时间。</DialogDescription><textarea className="edit-textarea" aria-label="记录内容" value={editText} maxLength={10000} onChange={e=>setEditText(e.target.value)}/><button className="primary-button" disabled={!editText.trim()||editSaving} onClick={async()=>{if(!editNote)return;setEditSaving(true);try{await api('/api/notes',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:editNote.id,content:editText})});setEditNote(null);await reload();toast.success('记录已更新');}catch(e){toast.error(errorText(e));}finally{setEditSaving(false);}}}>保存修改</button></DialogContent></Dialog>
   <Dialog open={!!image} onOpenChange={open=>{if(!open)setImage(null);}}><DialogContent className="image-dialog"><DialogTitle className="sr-only">查看记录图片</DialogTitle><DialogDescription className="sr-only">记录附带的原始图片</DialogDescription>{image&&<img src={image} alt="记录附图"/>}</DialogContent></Dialog>
+  <Dialog open={exportOpen} onOpenChange={setExportOpen}><DialogContent className="export-dialog">
+   <DialogTitle className="export-dialog-title"><div className="export-title-row"><span className="export-title-icon"><FileDown size={19}/></span><span>导出日记素材为 Markdown</span></div></DialogTitle>
+   <DialogDescription>汇总原始记录并格式化为标准 Markdown。可一键复制发给 Agent 整理成型日记，也可下载存入素材池。</DialogDescription>
+   <div className="export-body">
+    <div className="export-scope-section">
+     <div className="export-label">选择导出范围：</div>
+     <div className="scope-pills">
+      <button type="button" className={`scope-pill ${exportScope==='today'?'active':''}`} onClick={()=>setExportScope('today')}>今天 ({notes.filter(n=>localDate(n.created_at)===(today?localDate(today):localDate(new Date().toISOString()))).length})</button>
+      <button type="button" className={`scope-pill ${exportScope==='yesterday'?'active':''}`} onClick={()=>setExportScope('yesterday')}>昨天 ({(()=>{const d=new Date();d.setDate(d.getDate()-1);const y=localDate(d.toISOString());return notes.filter(n=>localDate(n.created_at)===y).length;})()})</button>
+      <button type="button" className={`scope-pill ${exportScope==='starred'?'active':''}`} onClick={()=>setExportScope('starred')}>⭐ 留待展开 ({notes.filter(n=>n.starred).length})</button>
+      <button type="button" className={`scope-pill ${exportScope==='all'?'active':''}`} onClick={()=>setExportScope('all')}>全部历史 ({notes.length})</button>
+      <button type="button" className={`scope-pill ${exportScope==='custom'?'active':''}`} onClick={()=>setExportScope('custom')}>指定日期</button>
+     </div>
+     {exportScope==='custom'&&<div className="custom-date-picker"><CalendarDays size={15}/><input type="date" value={exportCustomDate} onChange={e=>setExportCustomDate(e.target.value)}/></div>}
+    </div>
+    <div className="export-option-row">
+     <label className="checkbox-label"><Checkbox checked={includeAgentPrompt} onCheckedChange={checked=>setIncludeAgentPrompt(Boolean(checked))}/><span>附带 Agent 一键整理提示词（含懂懂日记语气心法）</span></label>
+     <span className="export-stats-badge">已选 {exportNotes.length} 条记录 · 约 {generatedMarkdown.length} 字</span>
+    </div>
+    <div className="export-preview-wrap"><textarea className="export-preview-textarea" readOnly value={generatedMarkdown} aria-label="Markdown 预览"/></div>
+    <div className="export-actions">
+     <button type="button" className="outline-button" onClick={copyExportMarkdown}><Copy size={15}/><span>复制 Markdown</span></button>
+     <button type="button" className="primary-button" onClick={downloadMarkdown}><Download size={15}/><span>下载 .md 文件</span></button>
+    </div>
+   </div>
+  </DialogContent></Dialog>
  </div>;
 }
