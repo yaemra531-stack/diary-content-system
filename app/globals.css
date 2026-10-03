@@ -1115,11 +1115,16 @@ html.dark body {
   padding: 2px 8px; border-radius: 99px;
   white-space: nowrap;
 }
+.challenge-type-pill {
+  flex-shrink: 0; font-size: 0.72rem; font-weight: 500;
+  padding: 2px 7px; border-radius: 4px;
+  white-space: nowrap;
+}
 .challenge-type-pill.pain {
-  background: #fef2f2; color: #dc2626;
+  background: rgba(0, 0, 0, 0.04); color: #64748b; border: 1px solid rgba(0, 0, 0, 0.06);
 }
 .challenge-type-pill.discovery {
-  background: #f0fdf4; color: #16a34a;
+  background: rgba(0, 0, 0, 0.03); color: #475569; border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .challenge-card-actions {
@@ -1164,10 +1169,10 @@ html.dark body {
 
 /* Dark mode overrides */
 :root.dark .challenge-type-pill.pain {
-  background: rgba(220,38,38,0.15); color: #f87171;
+  background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.08);
 }
 :root.dark .challenge-type-pill.discovery {
-  background: rgba(22,163,74,0.15); color: #4ade80;
+  background: rgba(255, 255, 255, 0.04); color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.07);
 }
 :root.dark .challenge-day-badge {
   background: rgba(255,255,255,0.08);
@@ -1246,4 +1251,107 @@ html.dark body {
 }
 :root.dark .outline-btn:hover {
   background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Priority selector and toolbar */
+.challenge-meta-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 5px;
+}
+.challenge-week-tag {
+  font-size: 0.72rem; padding: 2px 6px; border-radius: 4px;
+  background: rgba(0, 0, 0, 0.04); color: var(--muted-foreground, #666);
+}
+:root.dark .challenge-week-tag {
+  background: rgba(255, 255, 255, 0.05); color: #9ca3af;
+}
+
+.challenge-priority-selector {
+  display: inline-flex; align-items: center; gap: 1px;
+  padding: 1px 3px; border-radius: 6px;
+  background: rgba(0, 0, 0, 0.03);
+}
+:root.dark .challenge-priority-selector {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.flame-btn {
+  border: none; background: transparent; padding: 1px 2px;
+  cursor: pointer; font-size: 0.82rem; line-height: 1;
+  border-radius: 4px; opacity: 0.22;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.flame-btn.lit {
+  opacity: 1; filter: drop-shadow(0 1px 2px rgba(217, 119, 6, 0.3));
+}
+.challenge-card:hover .flame-btn:not(.lit) {
+  opacity: 0.55;
+}
+.flame-btn:hover {
+  opacity: 1; transform: scale(1.18);
+}
+
+.challenge-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin: 16px 0 20px;
+  padding: 10px 14px; background: var(--muted, #f8f9fa);
+  border-radius: 10px; border: 1px solid var(--border, #e5e7eb);
+}
+.challenge-filter-row {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.challenge-filter-label {
+  font-size: 0.8rem; font-weight: 500; color: var(--muted-foreground, #666);
+}
+.challenge-filter-btn {
+  border: 1px solid transparent; background: transparent;
+  padding: 4px 10px; border-radius: 6px; font-size: 0.78rem;
+  color: var(--muted-foreground, #555); cursor: pointer;
+  transition: all 0.15s ease;
+}
+.challenge-filter-btn:hover {
+  background: rgba(0, 0, 0, 0.05); color: var(--foreground, #111);
+}
+.challenge-filter-btn.active {
+  background: var(--background, #fff); color: var(--foreground, #111);
+  font-weight: 600; border-color: var(--border, #d1d5db);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.challenge-sort-btn {
+  border: 1px solid var(--border, #d1d5db); background: var(--background, #fff);
+  padding: 5px 12px; border-radius: 6px; font-size: 0.8rem;
+  color: var(--foreground, #333); cursor: pointer;
+  display: flex; align-items: center; gap: 4px; font-weight: 500;
+  transition: all 0.15s ease;
+}
+.challenge-sort-btn.active {
+  background: #fffbeb; border-color: #f59e0b; color: #b45309; font-weight: 600;
+}
+:root.dark .challenge-sort-btn.active {
+  background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;
+}
+
+.challenge-priority-field {
+  margin-bottom: 12px;
+}
+.challenge-flame-dialog-picker {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;
+}
+.flame-pill-btn {
+  border: 1px solid var(--border, #e5e7eb); background: var(--muted, #f9fafb);
+  padding: 6px 12px; border-radius: 8px; font-size: 0.82rem;
+  cursor: pointer; color: var(--muted-foreground, #555);
+  transition: all 0.15s;
+}
+.flame-pill-btn:hover {
+  border-color: var(--ring, #f97316); color: var(--foreground, #111);
+}
+.flame-pill-btn.active {
+  background: var(--background, #fff); border-color: #f59e0b;
+  color: #b45309; font-weight: 600; box-shadow: 0 1px 3px rgba(245, 158, 11, 0.15);
+}
+:root.dark .flame-pill-btn {
+  background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: #aaa;
+}
+:root.dark .flame-pill-btn.active {
+  background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;
 }

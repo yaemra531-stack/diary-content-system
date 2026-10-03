@@ -28,6 +28,10 @@ export default function Workbench({userId}:{userId:string}){
  const [exportCustomDate,setExportCustomDate]=useState(()=>localDate(new Date().toISOString())),[includeAgentPrompt,setIncludeAgentPrompt]=useState(true);
  const [challengeDone,setChallengeDone]=useState<Record<number,string>>({}),[challengeExpanded,setChallengeExpanded]=useState<string|null>(null);
  const [challengeTitles,setChallengeTitles]=useState<Record<number,string>>({});
+ const [challengePriorities,setChallengePriorities]=useState<Record<number,number>>({});
+ const [challengePriority,setChallengePriority]=useState<number>(0);
+ const [challengeFilter,setChallengeFilter]=useState<'all'|'p3'|'p2'|'p1'|'todo'>('all');
+ const [sortByPriority,setSortByPriority]=useState<boolean>(false);
  const [challengeEditorOpen,setChallengeEditorOpen]=useState(false),[challengeDay,setChallengeDay]=useState<number|null>(null),[challengeTitle,setChallengeTitle]=useState(''),[challengeText,setChallengeText]=useState('');
  useEffect(()=>{
   try {
@@ -58,8 +62,16 @@ export default function Workbench({userId}:{userId:string}){
    if(savedDone)setChallengeDone(JSON.parse(savedDone));
    const savedTitles=localStorage.getItem(`challenge-titles-${userId}`);
    if(savedTitles)setChallengeTitles(JSON.parse(savedTitles));
+   const savedPriorities=localStorage.getItem(`challenge-priorities-${userId}`);
+   if(savedPriorities)setChallengePriorities(JSON.parse(savedPriorities));
   }catch{}
  },[userId]);
+ const setTopicPriority=(day:number,priority:number)=>{
+  const next={...challengePriorities};
+  if(priority===0){delete next[day];}else{next[day]=priority;}
+  setChallengePriorities(next);
+  try{localStorage.setItem(`challenge-priorities-${userId}`,JSON.stringify(next));}catch{}
+ };
  const saveChallengeDay=(day:number,title:string,text:string)=>{
   const nextDone={...challengeDone,[day]:text};
   setChallengeDone(nextDone);
@@ -75,6 +87,7 @@ export default function Workbench({userId}:{userId:string}){
   setChallengeDay(day);
   setChallengeTitle(challengeTitles[day]||challengeTopics.find(t=>t.day===day)?.title||'');
   setChallengeText(challengeDone[day]||'');
+  setChallengePriority(challengePriorities[day]||0);
   setChallengeEditorOpen(true);
  };
  const doneCount=Object.keys(challengeDone).length;
@@ -172,20 +185,119 @@ export default function Workbench({userId}:{userId:string}){
     {selected.length>0&&reviewTab!=='drafts'&&<div className="selection-bar"><span>已选 {selected.length} 条</span><button className="text-button" onClick={()=>setSelected([])}>取消选择</button><button className="primary-button" onClick={()=>startDiary(selected)}>一起写成日记 <ArrowRight size={16}/></button></div>}
    </TabsContent>
    <TabsContent value="challenge">
-    <div className="page-heading"><div><p className="eyebrow">21-DAY WRITING CHALLENGE</p><h1>每天一个选题，写出你的身份。</h1><p className="heading-sub">30 个精选话题，目标完成 21 篇。用「一个认知 + 一个做法」结构，把经历变成内容。</p></div></div>
+    <div className="page-heading"><div><p className="eyebrow">21-DAY WRITING CHALLENGE</p><h1>每天一个选题，写出你的身份。</h1><p className="heading-sub">30 个精选话题，目标完成 21 篇。用「一个认知 + 一个做法」结构，按优先级突破核心选题。</p></div></div>
     <div className="challenge-progress-bar"><div className="challenge-progress-fill" style={{width:`${Math.min(doneCount/21*100,100)}%`}}/></div>
     <div className="challenge-stats"><span className="challenge-done-count">{doneCount}<small>/21</small></span><span className="challenge-stats-label">{doneCount>=21?'🎉 挑战达成！':'已完成'}</span></div>
-    <div className="challenge-weeks">{weeks.map(week=>{const weekTopics=challengeTopics.filter(t=>t.week===week);const weekDone=weekTopics.filter(t=>challengeDone[t.day]).length;const isExpanded=challengeExpanded===week||challengeExpanded===null;return <div key={week} className="challenge-week-group">
-     <button className="challenge-week-header" onClick={()=>setChallengeExpanded(challengeExpanded===week?null:week)}><div className="week-header-left"><span className="week-name">{week}</span><span className="week-progress">{weekDone}/{weekTopics.length}</span></div>{isExpanded?<ChevronUp size={16}/>:<ChevronDown size={16}/>}</button>
-     {isExpanded&&<div className="challenge-topic-list">{weekTopics.map(topic=>{
-      const isDone=!!challengeDone[topic.day];
-      const displayTitle=challengeTitles[topic.day]||topic.title;
-      return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
-       <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`D${topic.day}`}</span></div>
-       <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day)} style={{cursor:'pointer'}} title="点击修改标题与正文"><h3 className="challenge-title">{displayTitle}</h3><span className={`challenge-type-pill ${topic.type}`}>{topic.type==='pain'?'🔴 卡点':'🟢 发现'}</span></div>
-       <div className="challenge-card-actions">{isDone?<><button className="primary-button small outline-btn" onClick={()=>openChallengeEditor(topic.day)}>编辑</button><button className="text-button muted" onClick={()=>removeChallengeDay(topic.day)}>撤回</button></>:<button className="primary-button small" onClick={()=>openChallengeEditor(topic.day)}>开始写</button>}</div>
-      </article>;})}</div>}
-    </div>;})}</div>
+
+    <div className="challenge-toolbar">
+     <div className="challenge-filter-row">
+      <span className="challenge-filter-label">筛选：</span>
+      <button type="button" className={`challenge-filter-btn ${challengeFilter==='all'?'active':''}`} onClick={()=>setChallengeFilter('all')}>全部 ({challengeTopics.length})</button>
+      <button type="button" className={`challenge-filter-btn ${challengeFilter==='p3'?'active':''}`} onClick={()=>setChallengeFilter('p3')}>🔥🔥🔥 核心 ({challengeTopics.filter(t=>(challengePriorities[t.day]||0)===3).length})</button>
+      <button type="button" className={`challenge-filter-btn ${challengeFilter==='p2'?'active':''}`} onClick={()=>setChallengeFilter('p2')}>🔥🔥 重点 ({challengeTopics.filter(t=>(challengePriorities[t.day]||0)===2).length})</button>
+      <button type="button" className={`challenge-filter-btn ${challengeFilter==='p1'?'active':''}`} onClick={()=>setChallengeFilter('p1')}>🔥 常规 ({challengeTopics.filter(t=>(challengePriorities[t.day]||0)===1).length})</button>
+      <button type="button" className={`challenge-filter-btn ${challengeFilter==='todo'?'active':''}`} onClick={()=>setChallengeFilter('todo')}>未写 ({challengeTopics.filter(t=>!challengeDone[t.day]).length})</button>
+     </div>
+     <button type="button" className={`challenge-sort-btn ${sortByPriority?'active':''}`} onClick={()=>setSortByPriority(p=>!p)}>
+      {sortByPriority ? '🔥 优先级优先' : '📅 默认时间排序'}
+     </button>
+    </div>
+
+    {sortByPriority ? (
+     <div className="challenge-topic-list">
+      {[...challengeTopics]
+       .filter(t => {
+        if (challengeFilter === 'p3') return (challengePriorities[t.day]||0) === 3;
+        if (challengeFilter === 'p2') return (challengePriorities[t.day]||0) === 2;
+        if (challengeFilter === 'p1') return (challengePriorities[t.day]||0) === 1;
+        if (challengeFilter === 'todo') return !challengeDone[t.day];
+        return true;
+       })
+       .sort((a,b) => {
+        const pa = challengePriorities[a.day]||0, pb = challengePriorities[b.day]||0;
+        if (pb !== pa) return pb - pa;
+        return a.day - b.day;
+       })
+       .map(topic => {
+        const isDone = !!challengeDone[topic.day];
+        const displayTitle = challengeTitles[topic.day] || topic.title;
+        const p = challengePriorities[topic.day] || 0;
+        return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
+         <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`D${topic.day}`}</span></div>
+         <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day)} style={{cursor:'pointer'}} title="点击修改标题与正文">
+          <h3 className="challenge-title">{displayTitle}</h3>
+          <div className="challenge-meta-row">
+           <span className={`challenge-type-pill ${topic.type}`}>{topic.type==='pain'?'卡点':'发现'}</span>
+           <span className="challenge-week-tag">{topic.week}</span>
+           <div className="challenge-priority-selector" onClick={e=>e.stopPropagation()} title="设置优先级：1火/2火/3火">
+            {[1, 2, 3].map(lvl => (
+             <button key={lvl} type="button" className={`flame-btn ${p >= lvl ? 'lit' : ''}`} onClick={()=>setTopicPriority(topic.day, p === lvl ? 0 : lvl)} title={lvl === 1 ? '🔥 常规' : lvl === 2 ? '🔥🔥 重点' : '🔥🔥🔥 核心必写'}>🔥</button>
+            ))}
+           </div>
+          </div>
+         </div>
+         <div className="challenge-card-actions">
+          {isDone ? (
+           <><button className="primary-button small outline-btn" onClick={()=>openChallengeEditor(topic.day)}>编辑</button><button className="text-button muted" onClick={()=>removeChallengeDay(topic.day)}>撤回</button></>
+          ) : (
+           <button className="primary-button small" onClick={()=>openChallengeEditor(topic.day)}>开始写</button>
+          )}
+         </div>
+        </article>;
+       })}
+     </div>
+    ) : (
+     <div className="challenge-weeks">
+      {weeks.map(week => {
+       let weekTopics = challengeTopics.filter(t => t.week === week);
+       if (challengeFilter === 'p3') weekTopics = weekTopics.filter(t => (challengePriorities[t.day]||0) === 3);
+       else if (challengeFilter === 'p2') weekTopics = weekTopics.filter(t => (challengePriorities[t.day]||0) === 2);
+       else if (challengeFilter === 'p1') weekTopics = weekTopics.filter(t => (challengePriorities[t.day]||0) === 1);
+       else if (challengeFilter === 'todo') weekTopics = weekTopics.filter(t => !challengeDone[t.day]);
+
+       if (challengeFilter !== 'all' && weekTopics.length === 0) return null;
+
+       const weekDone = weekTopics.filter(t => challengeDone[t.day]).length;
+       const isExpanded = challengeExpanded === week || challengeExpanded === null;
+       return <div key={week} className="challenge-week-group">
+        <button className="challenge-week-header" onClick={()=>setChallengeExpanded(challengeExpanded===week?null:week)}>
+         <div className="week-header-left"><span className="week-name">{week}</span><span className="week-progress">{weekDone}/{weekTopics.length}</span></div>
+         {isExpanded ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+        </button>
+        {isExpanded && (
+         <div className="challenge-topic-list">
+          {weekTopics.map(topic => {
+           const isDone = !!challengeDone[topic.day];
+           const displayTitle = challengeTitles[topic.day] || topic.title;
+           const p = challengePriorities[topic.day] || 0;
+           return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
+            <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`D${topic.day}`}</span></div>
+            <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day)} style={{cursor:'pointer'}} title="点击修改标题与正文">
+             <h3 className="challenge-title">{displayTitle}</h3>
+             <div className="challenge-meta-row">
+              <span className={`challenge-type-pill ${topic.type}`}>{topic.type==='pain'?'卡点':'发现'}</span>
+              <div className="challenge-priority-selector" onClick={e=>e.stopPropagation()} title="设置优先级：1火/2火/3火">
+               {[1, 2, 3].map(lvl => (
+                <button key={lvl} type="button" className={`flame-btn ${p >= lvl ? 'lit' : ''}`} onClick={()=>setTopicPriority(topic.day, p === lvl ? 0 : lvl)} title={lvl === 1 ? '🔥 常规' : lvl === 2 ? '🔥🔥 重点' : '🔥🔥🔥 核心必写'}>🔥</button>
+               ))}
+              </div>
+             </div>
+            </div>
+            <div className="challenge-card-actions">
+             {isDone ? (
+              <><button className="primary-button small outline-btn" onClick={()=>openChallengeEditor(topic.day)}>编辑</button><button className="text-button muted" onClick={()=>removeChallengeDay(topic.day)}>撤回</button></>
+             ) : (
+              <button className="primary-button small" onClick={()=>openChallengeEditor(topic.day)}>开始写</button>
+             )}
+            </div>
+           </article>;
+          })}
+         </div>
+        )}
+       </div>;
+      })}
+     </div>
+    )}
    </TabsContent>
    </main><footer className="site-footer"><span>学间 · 留下真实发生的小事</span><span><CloudCheck size={14}/>保存的记录跟随账号</span></footer>
   </Tabs>
@@ -225,7 +337,17 @@ export default function Workbench({userId}:{userId:string}){
      <label className="challenge-input-label">文章标题</label>
      <input type="text" className="challenge-title-input" placeholder="输入或修改文章标题..." maxLength={120} value={challengeTitle} onChange={e=>setChallengeTitle(e.target.value)}/>
    </div>
-   <div className="challenge-template-hint"><p>💡 <strong>认知</strong>：我原来以为 ___，后来发现 ___</p><p>💡 <strong>做法</strong>：一个可执行的具体动作</p></div>
+   <div className="challenge-priority-field">
+      <label className="challenge-input-label">优先级设置</label>
+      <div className="challenge-flame-dialog-picker">
+        {[0, 1, 2, 3].map(lvl => (
+          <button key={lvl} type="button" className={`flame-pill-btn ${challengePriority === lvl ? 'active' : ''}`} onClick={()=>setChallengePriority(lvl)}>
+            {lvl === 0 ? '未标注' : lvl === 1 ? '🔥 常规' : lvl === 2 ? '🔥🔥 重点' : '🔥🔥🔥 核心'}
+          </button>
+        ))}
+      </div>
+    </div>
+    <div className="challenge-template-hint"><p>💡 <strong>认知</strong>：我原来以为 ___，后来发现 ___</p><p>💡 <strong>做法</strong>：一个可执行的具体动作</p></div>
    <div className="challenge-input-group">
      <div className="challenge-input-header">
        <label className="challenge-input-label">正文内容</label>
@@ -237,7 +359,7 @@ export default function Workbench({userId}:{userId:string}){
      <button type="button" className="text-button muted" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>copy([challengeTitle,challengeText].filter(Boolean).join('\n\n'))}><Copy size={15}/> 复制文章</button>
      <div className="challenge-actions-right">
        <button type="button" className="text-button muted" onClick={()=>setChallengeEditorOpen(false)}>取消</button>
-       <button className="primary-button" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>{if(challengeDay!==null){saveChallengeDay(challengeDay,challengeTitle.trim(),challengeText);setChallengeEditorOpen(false);toast.success(`Day ${challengeDay} 已保存 ✅`);}}}>保存修改</button>
+       <button className="primary-button" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>{if(challengeDay!==null){saveChallengeDay(challengeDay,challengeTitle.trim(),challengeText);setTopicPriority(challengeDay,challengePriority);setChallengeEditorOpen(false);toast.success(`Day ${challengeDay} 已保存 ✅`);}}}>保存修改</button>
      </div>
    </div>
   </DialogContent></Dialog>
