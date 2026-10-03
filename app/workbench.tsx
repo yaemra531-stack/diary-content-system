@@ -9,6 +9,7 @@ import {Toaster} from '@/components/ui/sonner';
 import {toast} from 'sonner';
 import {categories,categoryName,diaryPrompt,exportNotesToMarkdown,challengeTopics,type Category,type Note,type Draft,type ChallengeEntry} from '@/lib/diary';
 import {readPending,writePending,type PendingNotes} from '@/lib/pending';
+import {marked} from 'marked';
 const icons=[BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb];
 type Editor={id:string;title:string;content:string;sourceIds:string[]};
 async function api<T>(url:string,options?:RequestInit):Promise<T>{const res=await fetch(url,options);const data=await res.json() as T & {error?:string};if(!res.ok)throw new Error(data.error||'暂时无法保存，请重试。');return data;}
@@ -325,26 +326,55 @@ export default function Workbench({userId}:{userId:string}){
  <Dialog open={challengeEditorOpen} onOpenChange={setChallengeEditorOpen}><DialogContent className="challenge-editor-dialog">
    <DialogTitle>Challenge {challengeDay} · 自由写作</DialogTitle>
    <DialogDescription>想写哪个就写哪个。标题与正文均可自由修改，保存即计入挑战进度。</DialogDescription>
-   <div className="challenge-input-group">
-     <label className="challenge-input-label">文章标题</label>
-     <input type="text" className="challenge-title-input" placeholder="输入或修改文章标题..." maxLength={120} value={challengeTitle} onChange={e=>setChallengeTitle(e.target.value)}/>
-   </div>
-   <div className="challenge-priority-field">
-      <label className="challenge-input-label">优先级设置</label>
-      <div className="challenge-flame-dialog-picker">
-        {[0, 1, 2, 3].map(lvl => (
-          <button key={lvl} type="button" className={`flame-pill-btn ${challengePriority === lvl ? 'active' : ''}`} onClick={()=>setChallengePriority(lvl)}>
-            {lvl === 0 ? '未标注' : lvl === 1 ? '🔥 常规' : lvl === 2 ? '🔥🔥 重点' : '🔥🔥🔥 核心'}
-          </button>
-        ))}
-      </div>
-    </div>
-   <div className="challenge-input-group">
-     <div className="challenge-input-header">
-       <label className="challenge-input-label">正文内容</label>
-       <span className="challenge-char-count">{challengeText.length} 字</span>
+   <div className="challenge-split-layout">
+    <section className="challenge-editor-pane">
+     <div className="challenge-input-group">
+       <label className="challenge-input-label">文章标题</label>
+       <input type="text" className="challenge-title-input" placeholder="输入或修改文章标题..." maxLength={120} value={challengeTitle} onChange={e=>setChallengeTitle(e.target.value)}/>
      </div>
-     <textarea className="challenge-textarea" placeholder="写下关于这个话题的真实经历、思考或心得..." value={challengeText} onChange={e=>setChallengeText(e.target.value)} maxLength={20000}/>
+     <div className="challenge-priority-field">
+        <label className="challenge-input-label">优先级设置</label>
+        <div className="challenge-flame-dialog-picker">
+          {[0, 1, 2, 3].map(lvl => (
+            <button key={lvl} type="button" className={`flame-pill-btn ${challengePriority === lvl ? 'active' : ''}`} onClick={()=>setChallengePriority(lvl)}>
+              {lvl === 0 ? '未标注' : lvl === 1 ? '🔥 常规' : lvl === 2 ? '🔥🔥 重点' : '🔥🔥🔥 核心'}
+            </button>
+          ))}
+        </div>
+      </div>
+     <div className="challenge-input-group challenge-textarea-group">
+       <div className="challenge-input-header">
+         <label className="challenge-input-label">正文内容 (支持 Markdown)</label>
+         <span className="challenge-char-count">{challengeText.length} 字</span>
+       </div>
+       <textarea className="challenge-textarea" placeholder="写下关于这个话题的真实经历、思考或心得... (支持 Markdown 语法)" value={challengeText} onChange={e=>setChallengeText(e.target.value)} maxLength={20000}/>
+     </div>
+    </section>
+
+    <section className="challenge-preview-pane">
+     <div className="challenge-preview-header">
+       <span className="challenge-preview-label">实时排版预览</span>
+       <span className="challenge-preview-badge">Live Preview</span>
+     </div>
+     <div className="challenge-preview-scroll">
+       {challengeTitle.trim() && (
+         <h1 className="markdown-preview-title">{challengeTitle}</h1>
+       )}
+       {challengeText.trim() ? (
+         <div
+           className="markdown-rendered-body"
+           dangerouslySetInnerHTML={{
+             __html: marked.parse(challengeText, { breaks: true, gfm: true }) as string
+           }}
+         />
+       ) : (
+         <div className="markdown-preview-placeholder">
+           <p>👈 在左侧输入标题与正文</p>
+           <small>支持 # 标题、**加粗**、- 列表、&gt; 引用、代码块等 Markdown 语法，此处将即时呈现排版效果。</small>
+         </div>
+       )}
+     </div>
+    </section>
    </div>
    <div className="challenge-editor-actions">
      <button type="button" className="text-button muted" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>copy([challengeTitle,challengeText].filter(Boolean).join('\n\n'))}><Copy size={15}/> 复制文章</button>
