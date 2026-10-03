@@ -1,13 +1,13 @@
 "use client";
 import {useEffect,useRef,useState,useCallback} from 'react';
-import {BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb,Plus,ArrowUpRight,ArrowRight,ImagePlus,Bookmark,Check,NotebookPen,CloudCheck,X,LoaderCircle,Copy,RefreshCw,CalendarDays,LockKeyhole,Sun,Moon,Sparkles,Download,FileDown} from 'lucide-react';
+import {BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb,Plus,ArrowUpRight,ArrowRight,ImagePlus,Bookmark,Check,NotebookPen,CloudCheck,X,LoaderCircle,Copy,RefreshCw,CalendarDays,LockKeyhole,Sun,Moon,Sparkles,Download,FileDown,Target,ChevronDown,ChevronUp} from 'lucide-react';
 import {Tabs,TabsList,TabsTrigger,TabsContent} from '@/components/ui/tabs';
 import {Dialog,DialogContent,DialogTitle,DialogDescription} from '@/components/ui/dialog';
 import {Checkbox} from '@/components/ui/checkbox';
 import {Select,SelectTrigger,SelectValue,SelectContent,SelectItem} from '@/components/ui/select';
 import {Toaster} from '@/components/ui/sonner';
 import {toast} from 'sonner';
-import {categories,categoryName,diaryPrompt,exportNotesToMarkdown,type Category,type Note,type Draft} from '@/lib/diary';
+import {categories,categoryName,diaryPrompt,exportNotesToMarkdown,challengeTopics,type Category,type Note,type Draft,type ChallengeEntry} from '@/lib/diary';
 import {readPending,writePending,type PendingNotes} from '@/lib/pending';
 const icons=[BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb];
 type Editor={id:string;title:string;content:string;sourceIds:string[]};
@@ -26,6 +26,8 @@ export default function Workbench({userId}:{userId:string}){
  const [theme,setTheme]=useState<'light'|'dark'>('light');
  const [exportOpen,setExportOpen]=useState(false),[exportScope,setExportScope]=useState<'today'|'yesterday'|'all'|'starred'|'custom'>('today');
  const [exportCustomDate,setExportCustomDate]=useState(()=>localDate(new Date().toISOString())),[includeAgentPrompt,setIncludeAgentPrompt]=useState(true);
+ const [challengeDone,setChallengeDone]=useState<Record<number,string>>({}),[challengeExpanded,setChallengeExpanded]=useState<string|null>(null);
+ const [challengeEditorOpen,setChallengeEditorOpen]=useState(false),[challengeDay,setChallengeDay]=useState<number|null>(null),[challengeText,setChallengeText]=useState('');
  useEffect(()=>{
   try {
    const saved=localStorage.getItem('xuejian_theme');
@@ -49,6 +51,11 @@ export default function Workbench({userId}:{userId:string}){
   }
  };
  const fileInput=useRef<HTMLInputElement>(null),textInput=useRef<HTMLTextAreaElement>(null),requestLock=useRef(false);
+ useEffect(()=>{try{const saved=localStorage.getItem(`challenge-done-${userId}`);if(saved)setChallengeDone(JSON.parse(saved));}catch{}},[userId]);
+ const saveChallengeDay=(day:number,text:string)=>{const next={...challengeDone,[day]:text};setChallengeDone(next);try{localStorage.setItem(`challenge-done-${userId}`,JSON.stringify(next));}catch{}};
+ const removeChallengeDay=(day:number)=>{const next={...challengeDone};delete next[day];setChallengeDone(next);try{localStorage.setItem(`challenge-done-${userId}`,JSON.stringify(next));}catch{}};
+ const doneCount=Object.keys(challengeDone).length;
+ const weeks=[...new Set(challengeTopics.map(t=>t.week))];
  const cat=categories.find(c=>c.id===category)!,item=pending[category]??{id:'',content:'',files:[]};
  const reload=useCallback(async()=>{try{const [n,d]=await Promise.all([api<{notes:Note[]}>('/api/notes'),api<{drafts:Draft[]}>('/api/drafts')]);setNotes(n.notes);setDrafts(d.drafts);setLoadError('');}catch(e){setLoadError(errorText(e));}finally{setLoading(false);}},[]);
  useEffect(()=>{setToday(new Date().toISOString());let active=true;readPending(userId).then(data=>{if(active)setPending(data);}).catch(()=>setStorageError(true)).finally(()=>{if(active)setHydrated(true);});try{const last=localStorage.getItem(`diary-category-${userId}`);if(categories.some(c=>c.id===last))setCategory(last as Category);const saved=localStorage.getItem(`diary-editor-${userId}`);if(saved)setEditor(JSON.parse(saved));}catch{setStorageError(true);}reload();const focus=()=>{setToday(new Date().toISOString());reload();};window.addEventListener('focus',focus);return()=>{active=false;window.removeEventListener('focus',focus);};},[userId,reload]);
@@ -97,7 +104,7 @@ export default function Workbench({userId}:{userId:string}){
  </article>;}
  return <div className="app-shell"><Toaster position="top-center" theme={theme} richColors/>
   <Tabs value={view} onValueChange={setView} className="site-tabs">
-   <header className="topbar"><a className="brand" href="/" aria-label="雅思日记首页"><span className="brand-mark"><NotebookPen size={22} strokeWidth={1.6}/></span><span>雅思日记<span className="brand-description">备考手记</span></span></a><TabsList className="main-nav"><TabsTrigger value="capture"><PenLine size={16}/>随手记</TabsTrigger><TabsTrigger value="review"><BookOpen size={16}/>回看整理</TabsTrigger></TabsList><div className="topbar-actions">
+   <header className="topbar"><a className="brand" href="/" aria-label="雅思日记首页"><span className="brand-mark"><NotebookPen size={22} strokeWidth={1.6}/></span><span>雅思日记<span className="brand-description">备考手记</span></span></a><TabsList className="main-nav"><TabsTrigger value="capture"><PenLine size={16}/>随手记</TabsTrigger><TabsTrigger value="review"><BookOpen size={16}/>回看整理</TabsTrigger><TabsTrigger value="challenge"><Target size={16}/>写作挑战</TabsTrigger></TabsList><div className="topbar-actions">
     <button type="button" className="theme-toggle-btn" onClick={toggleTheme} title={theme==='dark'?'切换为日间模式':'切换为夜间模式'} aria-label="切换夜间模式">
      {theme==='dark'?<Sun size={15}/>:<Moon size={15}/>}
      <span className="theme-toggle-text">{theme==='dark'?'夜间':'日间'}</span>
@@ -141,6 +148,19 @@ export default function Workbench({userId}:{userId:string}){
     {loadError?<div className="notice error">{loadError}<button className="text-button" onClick={reload}>重新读取</button></div>:loading?<div className="empty-state">正在读取…</div>:reviewTab==='drafts'?drafts.length?<div className="review-grid">{drafts.map(d=><article className="note-card diary-card" key={d.id}><div className="note-meta"><span className="category-label">日记草稿</span><time>{new Date(d.updated_at).toLocaleDateString('zh-CN')}</time></div><h2>{d.title}</h2><p className="note-content">{d.content}</p><button className="text-button" onClick={()=>{if(editor&&!editorSaved&&editor.id!==d.id&&(editor.content||editor.title)){setEditorOpen(true);toast.info('先保存正在写的日记，再打开另一篇。');return;}setEditor({id:d.id,title:d.title,content:d.content,sourceIds:JSON.parse(d.source_ids)});setEditorSaved(true);setEditorOpen(true);}}>继续编辑 <ArrowUpRight size={15}/></button></article>)}</div>:<div className="empty-state"><NotebookPen size={30}/><h3>日记，从一条真实记录开始</h3><p>到「全部记录」里选一条，点击「拿来写日记」。</p></div>:filtered.length?<div className="review-grid">{filtered.map(n=>noteCard(n,true))}</div>:<div className="empty-state"><Bookmark size={28}/><h3>{reviewTab==='starred'?'还没有留待展开的记录':'这里还没有记录'}</h3><p>{reviewTab==='starred'?'遇到想多聊几句的记录，点一下右上角的书签。':'换个筛选条件，或先去记下今天的一个想法。'}</p></div>}
     {selected.length>0&&reviewTab!=='drafts'&&<div className="selection-bar"><span>已选 {selected.length} 条</span><button className="text-button" onClick={()=>setSelected([])}>取消选择</button><button className="primary-button" onClick={()=>startDiary(selected)}>一起写成日记 <ArrowRight size={16}/></button></div>}
    </TabsContent>
+   <TabsContent value="challenge">
+    <div className="page-heading"><div><p className="eyebrow">21-DAY WRITING CHALLENGE</p><h1>每天一个选题，写出你的身份。</h1><p className="heading-sub">30 个精选话题，目标完成 21 篇。用「一个认知 + 一个做法」结构，把经历变成内容。</p></div></div>
+    <div className="challenge-progress-bar"><div className="challenge-progress-fill" style={{width:`${Math.min(doneCount/21*100,100)}%`}}/></div>
+    <div className="challenge-stats"><span className="challenge-done-count">{doneCount}<small>/21</small></span><span className="challenge-stats-label">{doneCount>=21?'🎉 挑战达成！':'已完成'}</span></div>
+    <div className="challenge-weeks">{weeks.map(week=>{const weekTopics=challengeTopics.filter(t=>t.week===week);const weekDone=weekTopics.filter(t=>challengeDone[t.day]).length;const isExpanded=challengeExpanded===week||challengeExpanded===null;return <div key={week} className="challenge-week-group">
+     <button className="challenge-week-header" onClick={()=>setChallengeExpanded(challengeExpanded===week?null:week)}><div className="week-header-left"><span className="week-name">{week}</span><span className="week-progress">{weekDone}/{weekTopics.length}</span></div>{isExpanded?<ChevronUp size={16}/>:<ChevronDown size={16}/>}</button>
+     {isExpanded&&<div className="challenge-topic-list">{weekTopics.map(topic=>{const isDone=!!challengeDone[topic.day];return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
+      <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`D${topic.day}`}</span></div>
+      <div className="challenge-card-body"><h3 className="challenge-title">{topic.title}</h3><span className={`challenge-type-pill ${topic.type}`}>{topic.type==='pain'?'🔴 卡点':'🟢 发现'}</span></div>
+      <div className="challenge-card-actions">{isDone?<><button className="text-button muted" onClick={()=>{setChallengeDay(topic.day);setChallengeText(challengeDone[topic.day]);setChallengeEditorOpen(true);}}>查看</button><button className="text-button muted" onClick={()=>removeChallengeDay(topic.day)}>撤回</button></>:<button className="primary-button small" onClick={()=>{setChallengeDay(topic.day);setChallengeText('');setChallengeEditorOpen(true);}}>开始写</button>}</div>
+     </article>;})}</div>}
+    </div>;})}</div>
+   </TabsContent>
    </main><footer className="site-footer"><span>学间 · 留下真实发生的小事</span><span><CloudCheck size={14}/>保存的记录跟随账号</span></footer>
   </Tabs>
   <Dialog open={editorOpen} onOpenChange={setEditorOpen}><DialogContent className="diary-dialog"><DialogTitle>把这一刻，写成日记</DialogTitle><DialogDescription>原始记录会保留。可以自己写，也可以复制素材给 AI，聊完再把草稿放回来。</DialogDescription><div className="diary-columns"><section className="source-panel"><h3>原始记录 · {sourceNotes.length} 条</h3>{sourceNotes.map(n=><div className="source-note" key={n.id}><span className="small-label">{categoryName(n.category)}</span><p>{n.content||'一条图片记录'}</p>{n.images.map(i=><img key={i.id} src={`/api/images/${i.id}`} alt={i.name}/>)}</div>)}<button className="outline-button" onClick={()=>copy(diaryPrompt(sourceNotes))}><Copy size={16}/>复制素材和整理提示</button><p className="helper-text">粘贴到你正在使用的 AI 对话里；图片需要另行附上。</p></section><section className="diary-writing"><label htmlFor="diary-title">日记标题 <span className="muted">（可选）</span></label><input id="diary-title" placeholder="给这段经历起个名字" maxLength={100} value={editor?.title??''} onChange={e=>changeEditor({title:e.target.value})} disabled={editorSaving}/><label htmlFor="diary-content">日记正文</label><textarea id="diary-content" placeholder="当时发生了什么？你做了什么？后来有什么变化？\n\n像跟朋友聊天一样，先写几句话。" maxLength={20000} value={editor?.content??''} onChange={e=>changeEditor({content:e.target.value})} disabled={editorSaving}/><div className="diary-actions"><button className="text-button" disabled={!editor?.content} onClick={()=>copy([editor?.title,editor?.content].filter(Boolean).join('\n\n'))}><Copy size={16}/>复制正文</button><button className="primary-button" disabled={!editor?.content.trim()||editorSaving} onClick={saveDiary}>{editorSaving?<LoaderCircle size={16} className="spin"/>:<Check size={16}/>}保存日记草稿</button></div><p className="helper-text">{editorSaved?'已保存到账号，可在其他设备继续。':'未保存的输入会暂存于本机，关闭此窗口后可以继续。'}</p></section></div></DialogContent></Dialog>
@@ -171,6 +191,13 @@ export default function Workbench({userId}:{userId:string}){
      <button type="button" className="primary-button" onClick={downloadMarkdown}><Download size={15}/><span>下载 .md 文件</span></button>
     </div>
    </div>
+  </DialogContent></Dialog>
+ <Dialog open={challengeEditorOpen} onOpenChange={setChallengeEditorOpen}><DialogContent className="challenge-editor-dialog">
+   <DialogTitle>Day {challengeDay} · {challengeTopics.find(t=>t.day===challengeDay)?.title??''}</DialogTitle>
+   <DialogDescription>按「一个认知 + 一个做法」结构来写。写完点保存，即算完成这一天。</DialogDescription>
+   <div className="challenge-template-hint"><p>💡 <strong>认知</strong>：我原来以为 ___，后来发现 ___</p><p>💡 <strong>做法</strong>：一个可执行的具体动作</p></div>
+   <textarea className="challenge-textarea" placeholder={"## 认知\n（一句话写清你的认知转变）\n\n## 做法\n（一个可执行的具体动作）"} value={challengeText} onChange={e=>setChallengeText(e.target.value)} maxLength={20000}/>
+   <div className="challenge-editor-actions"><span className="challenge-char-count">{challengeText.length} 字</span><button className="primary-button" disabled={!challengeText.trim()} onClick={()=>{if(challengeDay!==null){saveChallengeDay(challengeDay,challengeText);setChallengeEditorOpen(false);toast.success(`Day ${challengeDay} 完成！已保存 ✅`);}}}>保存并完成</button></div>
   </DialogContent></Dialog>
  </div>;
 }

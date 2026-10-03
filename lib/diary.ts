@@ -65,3 +65,49 @@ export function exportNotesToMarkdown(notes: Note[], options: { dateStr?: string
 
   return md;
 }
+
+// --- 21天写作挑战 ---
+export type ChallengeEntry = {
+  day: number;
+  title: string;
+  type: 'pain' | 'discovery'; // pain=卡点, discovery=发现
+  week: string;
+};
+
+export const challengeTopics: ChallengeEntry[] = [
+  // 第一周：起步与规划
+  { day:1,  title:'自学雅思第一周我只做3件事',         type:'discovery', week:'起步与规划' },
+  { day:2,  title:'别再收藏攻略了先做这一件事',         type:'pain',      week:'起步与规划' },
+  { day:3,  title:'自学雅思我买了7本书只用上2本',       type:'discovery', week:'起步与规划' },
+  { day:4,  title:'雅思从0到出分一张图讲清',           type:'discovery', week:'起步与规划' },
+  { day:5,  title:'我自学到6.5一共花了多少小时',       type:'pain',      week:'起步与规划' },
+  { day:6,  title:'这份一周计划表我抄了3个月',         type:'discovery', week:'起步与规划' },
+  { day:7,  title:'基础差的人要多久考到6.5',           type:'pain',      week:'起步与规划' },
+  // 第二周：单词与记忆
+  { day:8,  title:'很火的背单词法为什么对我没用',       type:'pain',      week:'单词与记忆' },
+  { day:9,  title:'抄了一整本单词书我还是忘',           type:'pain',      week:'单词与记忆' },
+  { day:10, title:'单词按字母背到一半全搅浑',           type:'pain',      week:'单词与记忆' },
+  { day:11, title:'单词别零着背要按场景分',             type:'discovery', week:'单词与记忆' },
+  { day:12, title:'一小时记不住10个单词不是不用心',     type:'pain',      week:'单词与记忆' },
+  { day:13, title:'背单词背到上头那一刻怎么办',         type:'pain',      week:'单词与记忆' },
+  { day:14, title:'底子差别再抄单词了试试这个',         type:'discovery', week:'单词与记忆' },
+  // 第三周：AI 工具与方法
+  { day:15, title:'用AI学英语30天哪些有用哪些没用',     type:'discovery', week:'AI 工具与方法' },
+  { day:16, title:'学英语我会用的5条AI指令',           type:'discovery', week:'AI 工具与方法' },
+  { day:17, title:'让AI把单词写进文章里背',             type:'discovery', week:'AI 工具与方法' },
+  { day:18, title:'把单词丢给AI要派生词和易混词',       type:'discovery', week:'AI 工具与方法' },
+  { day:19, title:'我让AI把作文改成能模仿的版本',       type:'discovery', week:'AI 工具与方法' },
+  { day:20, title:'自学雅思没人问我把AI当老师',         type:'discovery', week:'AI 工具与方法' },
+  { day:21, title:'用AI学雅思卡在了第一步',             type:'pain',      week:'AI 工具与方法' },
+  // 第四周：听说读写与情绪
+  { day:22, title:'雅思口语每天10分钟怎么练',           type:'discovery', week:'听说读写与情绪' },
+  { day:23, title:'雅思听力听不懂其实分三种',           type:'discovery', week:'听说读写与情绪' },
+  { day:24, title:'单词都认识但说不出为什么',           type:'pain',      week:'听说读写与情绪' },
+  { day:25, title:'作文没人改我让AI逐句批',             type:'discovery', week:'听说读写与情绪' },
+  { day:26, title:'坚持不下去那天我是怎么回来的',       type:'pain',      week:'听说读写与情绪' },
+  { day:27, title:'想放弃雅思前先试这个最低方案',       type:'discovery', week:'听说读写与情绪' },
+  { day:28, title:'不靠意志力我怎么坚持下来的',         type:'discovery', week:'听说读写与情绪' },
+  // 收尾加餐
+  { day:29, title:'在职备考碎片时间怎么背单词',         type:'pain',      week:'收尾加餐' },
+  { day:30, title:'在阅读里背单词记得牢得多',           type:'discovery', week:'收尾加餐' },
+];

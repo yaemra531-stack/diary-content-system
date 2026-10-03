@@ -1011,3 +1011,175 @@ html.dark body {
     padding: 22px 18px;
   }
 }
+
+/* ===== 21天写作挑战 ===== */
+.challenge-progress-bar {
+  width: 100%; height: 8px; border-radius: 99px;
+  background: var(--muted, #e5e7eb); overflow: hidden;
+  margin: 0 0 12px;
+}
+.challenge-progress-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, #f97316, #f59e0b);
+  transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  min-width: 4px;
+}
+.challenge-stats {
+  display: flex; align-items: baseline; gap: 8px;
+  margin-bottom: 28px;
+}
+.challenge-done-count {
+  font-size: 2rem; font-weight: 700; letter-spacing: -0.02em;
+  color: var(--foreground, #111);
+}
+.challenge-done-count small {
+  font-size: 1rem; font-weight: 400; opacity: 0.5;
+}
+.challenge-stats-label {
+  font-size: 0.85rem; color: var(--muted-foreground, #888);
+}
+
+/* Week groups */
+.challenge-weeks {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.challenge-week-group {
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px; overflow: hidden;
+  background: var(--card, #fff);
+}
+.challenge-week-header {
+  width: 100%; display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px; border: none; background: none;
+  cursor: pointer; font-size: 0.9rem; font-weight: 600;
+  color: var(--foreground, #111);
+  transition: background 0.15s;
+}
+.challenge-week-header:hover {
+  background: var(--accent, #f5f5f5);
+}
+.week-header-left {
+  display: flex; align-items: center; gap: 10px;
+}
+.week-name { font-weight: 600; }
+.week-progress {
+  font-size: 0.75rem; font-weight: 500; padding: 2px 8px;
+  border-radius: 99px; background: var(--muted, #f0f0f0);
+  color: var(--muted-foreground, #666);
+}
+
+/* Topic cards */
+.challenge-topic-list {
+  display: flex; flex-direction: column;
+  border-top: 1px solid var(--border, #e5e7eb);
+}
+.challenge-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border, #f0f0f0);
+  transition: background 0.15s;
+}
+.challenge-card:last-child { border-bottom: none; }
+.challenge-card:hover { background: var(--accent, #fafafa); }
+.challenge-card.is-done { opacity: 0.65; }
+.challenge-card.is-done .challenge-title {
+  text-decoration: line-through;
+  text-decoration-color: var(--muted-foreground, #ccc);
+}
+
+.challenge-day-badge {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 10px;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.02em;
+  background: var(--muted, #f3f4f6);
+  color: var(--muted-foreground, #888);
+  flex-shrink: 0;
+}
+.challenge-day-badge.done {
+  background: linear-gradient(135deg, #f97316, #f59e0b);
+  color: #fff;
+}
+
+.challenge-card-body {
+  flex: 1; display: flex; align-items: center; gap: 10px;
+  min-width: 0;
+}
+.challenge-title {
+  font-size: 0.88rem; font-weight: 500; margin: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: var(--foreground, #222);
+}
+.challenge-type-pill {
+  flex-shrink: 0; font-size: 0.7rem; font-weight: 500;
+  padding: 2px 8px; border-radius: 99px;
+  white-space: nowrap;
+}
+.challenge-type-pill.pain {
+  background: #fef2f2; color: #dc2626;
+}
+.challenge-type-pill.discovery {
+  background: #f0fdf4; color: #16a34a;
+}
+
+.challenge-card-actions {
+  display: flex; gap: 6px; flex-shrink: 0;
+}
+.challenge-card-actions .primary-button.small {
+  padding: 5px 14px; font-size: 0.78rem;
+  border-radius: 8px;
+}
+
+/* Challenge editor dialog */
+.challenge-editor-dialog {
+  max-width: 640px !important; width: 92vw !important;
+}
+.challenge-template-hint {
+  background: var(--muted, #f8f9fa); border-radius: 10px;
+  padding: 12px 16px; margin-bottom: 12px;
+  font-size: 0.82rem; line-height: 1.6;
+  color: var(--muted-foreground, #555);
+}
+.challenge-template-hint p { margin: 2px 0; }
+.challenge-textarea {
+  width: 100%; min-height: 240px; max-height: 50vh;
+  padding: 14px 16px; border-radius: 10px;
+  border: 1px solid var(--border, #e5e7eb);
+  background: var(--background, #fff);
+  color: var(--foreground, #111);
+  font-size: 0.9rem; line-height: 1.7; resize: vertical;
+  font-family: inherit;
+}
+.challenge-textarea:focus {
+  outline: none; border-color: var(--ring, #f97316);
+  box-shadow: 0 0 0 2px rgba(249,115,22,0.15);
+}
+.challenge-editor-actions {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 8px;
+}
+.challenge-char-count {
+  font-size: 0.78rem; color: var(--muted-foreground, #999);
+}
+
+/* Dark mode overrides */
+:root.dark .challenge-type-pill.pain {
+  background: rgba(220,38,38,0.15); color: #f87171;
+}
+:root.dark .challenge-type-pill.discovery {
+  background: rgba(22,163,74,0.15); color: #4ade80;
+}
+:root.dark .challenge-day-badge {
+  background: rgba(255,255,255,0.08);
+  color: var(--muted-foreground, #aaa);
+}
+:root.dark .challenge-template-hint {
+  background: rgba(255,255,255,0.05);
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .challenge-card-body { flex-wrap: wrap; gap: 6px; }
+  .challenge-title { white-space: normal; }
+  .challenge-card { padding: 12px 14px; }
+}
