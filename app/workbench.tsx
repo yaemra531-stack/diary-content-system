@@ -1,13 +1,13 @@
 "use client";
 import {useEffect,useRef,useState,useCallback} from 'react';
-import {BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb,Plus,ArrowUpRight,ArrowRight,ImagePlus,Bookmark,Check,NotebookPen,CloudCheck,X,LoaderCircle,Copy,RefreshCw,CalendarDays,LockKeyhole,Sun,Moon,Sparkles,Download,FileDown,Target,ChevronDown,ChevronUp} from 'lucide-react';
+import {BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb,Plus,ArrowUpRight,ArrowRight,ImagePlus,Bookmark,Check,NotebookPen,CloudCheck,X,LoaderCircle,Copy,RefreshCw,CalendarDays,LockKeyhole,Sun,Moon,Sparkles,Download,FileDown,Target,ChevronDown,ChevronUp,Upload,Trash2} from 'lucide-react';
 import {Tabs,TabsList,TabsTrigger,TabsContent} from '@/components/ui/tabs';
 import {Dialog,DialogContent,DialogTitle,DialogDescription} from '@/components/ui/dialog';
 import {Checkbox} from '@/components/ui/checkbox';
 import {Select,SelectTrigger,SelectValue,SelectContent,SelectItem} from '@/components/ui/select';
 import {Toaster} from '@/components/ui/sonner';
 import {toast} from 'sonner';
-import {categories,categoryName,diaryPrompt,exportNotesToMarkdown,challengeTopics,type Category,type Note,type Draft,type ChallengeEntry} from '@/lib/diary';
+import {categories,categoryName,diaryPrompt,exportNotesToMarkdown,challengeTopics,type Category,type Note,type Draft,type ChallengeEntry,type SourceTopicItem} from '@/lib/diary';
 import {readPending,writePending,type PendingNotes} from '@/lib/pending';
 import {marked} from 'marked';
 const icons=[BookOpen,Headphones,ScanText,Mic,PenLine,Lightbulb];
@@ -37,6 +37,23 @@ export default function Workbench({userId}:{userId:string}){
  const [challengeFilter,setChallengeFilter]=useState<'all'|'p3'|'p2'|'p1'|'todo'>('all');
  const [sortByPriority,setSortByPriority]=useState<boolean>(false);
  const [challengeEditorOpen,setChallengeEditorOpen]=useState(false),[challengeDay,setChallengeDay]=useState<number|null>(null),[challengeTitle,setChallengeTitle]=useState(''),[challengeText,setChallengeText]=useState('');
+ const [challengeSubTab,setChallengeSubTab]=useState<'part1'|'zhihu'|'xhs'>('part1');
+ const [challengeEditorPart,setChallengeEditorPart]=useState<'part1'|'zhihu'|'xhs'>('part1');
+ const [zhihuTopics,setZhihuTopics]=useState<SourceTopicItem[]>([]);
+ const [zhihuDone,setZhihuDone]=useState<Record<number,string>>({});
+ const [zhihuTitles,setZhihuTitles]=useState<Record<number,string>>({});
+ const [zhihuPriorities,setZhihuPriorities]=useState<Record<number,number>>({});
+ const [zhihuTypes,setZhihuTypes]=useState<Record<number,'pain'|'discovery'|'thought'>>({});
+ const [zhihuDrafts,setZhihuDrafts]=useState<Record<number,{title:string;text:string;priority:number;type:'pain'|'discovery'|'thought';updatedAt:number}>>({});
+ const [newZhihuTitle,setNewZhihuTitle]=useState('');
+ const [xhsTopics,setXhsTopics]=useState<SourceTopicItem[]>([]);
+ const [xhsDone,setXhsDone]=useState<Record<number,string>>({});
+ const [xhsTitles,setXhsTitles]=useState<Record<number,string>>({});
+ const [xhsPriorities,setXhsPriorities]=useState<Record<number,number>>({});
+ const [xhsTypes,setXhsTypes]=useState<Record<number,'pain'|'discovery'|'thought'>>({});
+ const [xhsDrafts,setXhsDrafts]=useState<Record<number,{title:string;text:string;priority:number;type:'pain'|'discovery'|'thought';updatedAt:number}>>({});
+ const [newXhsTitle,setNewXhsTitle]=useState('');
+ const jsonFileInputRef=useRef<HTMLInputElement>(null);
  useEffect(()=>{
   try {
    const saved=localStorage.getItem('xuejian_theme');
@@ -72,51 +89,159 @@ export default function Workbench({userId}:{userId:string}){
    if(savedTypes)setChallengeTypes(JSON.parse(savedTypes));
    const savedDrafts=localStorage.getItem(`challenge-drafts-${userId}`);
    if(savedDrafts)setChallengeDrafts(JSON.parse(savedDrafts));
+
+   // Zhihu
+   const savedZhihuTopics=localStorage.getItem(`source-topics-zhihu-${userId}`);
+   if(savedZhihuTopics)setZhihuTopics(JSON.parse(savedZhihuTopics));
+   const savedZhihuDone=localStorage.getItem(`challenge-done-zhihu-${userId}`);
+   if(savedZhihuDone)setZhihuDone(JSON.parse(savedZhihuDone));
+   const savedZhihuTitles=localStorage.getItem(`challenge-titles-zhihu-${userId}`);
+   if(savedZhihuTitles)setZhihuTitles(JSON.parse(savedZhihuTitles));
+   const savedZhihuPriorities=localStorage.getItem(`challenge-priorities-zhihu-${userId}`);
+   if(savedZhihuPriorities)setZhihuPriorities(JSON.parse(savedZhihuPriorities));
+   const savedZhihuTypes=localStorage.getItem(`challenge-types-zhihu-${userId}`);
+   if(savedZhihuTypes)setZhihuTypes(JSON.parse(savedZhihuTypes));
+   const savedZhihuDrafts=localStorage.getItem(`challenge-drafts-zhihu-${userId}`);
+   if(savedZhihuDrafts)setZhihuDrafts(JSON.parse(savedZhihuDrafts));
+
+   // XHS
+   const savedXhsTopics=localStorage.getItem(`source-topics-xhs-${userId}`);
+   if(savedXhsTopics)setXhsTopics(JSON.parse(savedXhsTopics));
+   const savedXhsDone=localStorage.getItem(`challenge-done-xhs-${userId}`);
+   if(savedXhsDone)setXhsDone(JSON.parse(savedXhsDone));
+   const savedXhsTitles=localStorage.getItem(`challenge-titles-xhs-${userId}`);
+   if(savedXhsTitles)setXhsTitles(JSON.parse(savedXhsTitles));
+   const savedXhsPriorities=localStorage.getItem(`challenge-priorities-xhs-${userId}`);
+   if(savedXhsPriorities)setXhsPriorities(JSON.parse(savedXhsPriorities));
+   const savedXhsTypes=localStorage.getItem(`challenge-types-xhs-${userId}`);
+   if(savedXhsTypes)setXhsTypes(JSON.parse(savedXhsTypes));
+   const savedXhsDrafts=localStorage.getItem(`challenge-drafts-xhs-${userId}`);
+   if(savedXhsDrafts)setXhsDrafts(JSON.parse(savedXhsDrafts));
   }catch{}
  },[userId]);
- const setTopicPriority=(day:number,priority:number)=>{
-  const next={...challengePriorities};
-  if(priority===0){delete next[day];}else{next[day]=priority;}
-  setChallengePriorities(next);
-  try{localStorage.setItem(`challenge-priorities-${userId}`,JSON.stringify(next));}catch{}
- };
- const saveChallengeDay=(day:number,title:string,text:string)=>{
-  const nextDone={...challengeDone,[day]:text};
-  setChallengeDone(nextDone);
-  try{localStorage.setItem(`challenge-done-${userId}`,JSON.stringify(nextDone));}catch{}
-  if(title){
-   const nextTitles={...challengeTitles,[day]:title};
-   setChallengeTitles(nextTitles);
-   try{localStorage.setItem(`challenge-titles-${userId}`,JSON.stringify(nextTitles));}catch{}
+ const setPartPriority=(id:number,priority:number,part:'part1'|'zhihu'|'xhs'='part1')=>{
+  if(part==='part1'){
+   const next={...challengePriorities};
+   if(priority===0){delete next[id];}else{next[id]=priority;}
+   setChallengePriorities(next);
+   try{localStorage.setItem(`challenge-priorities-${userId}`,JSON.stringify(next));}catch{}
+  }else if(part==='zhihu'){
+   const next={...zhihuPriorities};
+   if(priority===0){delete next[id];}else{next[id]=priority;}
+   setZhihuPriorities(next);
+   try{localStorage.setItem(`challenge-priorities-zhihu-${userId}`,JSON.stringify(next));}catch{}
+  }else if(part==='xhs'){
+   const next={...xhsPriorities};
+   if(priority===0){delete next[id];}else{next[id]=priority;}
+   setXhsPriorities(next);
+   try{localStorage.setItem(`challenge-priorities-xhs-${userId}`,JSON.stringify(next));}catch{}
   }
  };
- const removeChallengeDay=(day:number)=>{const next={...challengeDone};delete next[day];setChallengeDone(next);try{localStorage.setItem(`challenge-done-${userId}`,JSON.stringify(next));}catch{}};
- const saveDraft=(day:number,title:string,text:string,priority:number,type:'pain'|'discovery'|'thought')=>{
-  const nextDrafts={...challengeDrafts,[day]:{title,text,priority,type,updatedAt:Date.now()}};
-  setChallengeDrafts(nextDrafts);
-  try{localStorage.setItem(`challenge-drafts-${userId}`,JSON.stringify(nextDrafts));}catch{}
+ const setTopicPriority=(day:number,priority:number)=>setPartPriority(day,priority,'part1');
+
+ const removeChallengeItem=(id:number,part:'part1'|'zhihu'|'xhs'='part1')=>{
+  if(part==='part1'){
+   const next={...challengeDone};delete next[id];setChallengeDone(next);
+   try{localStorage.setItem(`challenge-done-${userId}`,JSON.stringify(next));}catch{}
+  }else if(part==='zhihu'){
+   const next={...zhihuDone};delete next[id];setZhihuDone(next);
+   try{localStorage.setItem(`challenge-done-zhihu-${userId}`,JSON.stringify(next));}catch{}
+  }else if(part==='xhs'){
+   const next={...xhsDone};delete next[id];setXhsDone(next);
+   try{localStorage.setItem(`challenge-done-xhs-${userId}`,JSON.stringify(next));}catch{}
+  }
  };
+ const removeChallengeDay=(day:number)=>removeChallengeItem(day,'part1');
+
+ const saveDraft=(id:number,title:string,text:string,priority:number,type:'pain'|'discovery'|'thought')=>{
+  if(challengeEditorPart==='part1'){
+   const nextDrafts={...challengeDrafts,[id]:{title,text,priority,type,updatedAt:Date.now()}};
+   setChallengeDrafts(nextDrafts);
+   try{localStorage.setItem(`challenge-drafts-${userId}`,JSON.stringify(nextDrafts));}catch{}
+  }else if(challengeEditorPart==='zhihu'){
+   const nextDrafts={...zhihuDrafts,[id]:{title,text,priority,type,updatedAt:Date.now()}};
+   setZhihuDrafts(nextDrafts);
+   try{localStorage.setItem(`challenge-drafts-zhihu-${userId}`,JSON.stringify(nextDrafts));}catch{}
+  }else if(challengeEditorPart==='xhs'){
+   const nextDrafts={...xhsDrafts,[id]:{title,text,priority,type,updatedAt:Date.now()}};
+   setXhsDrafts(nextDrafts);
+   try{localStorage.setItem(`challenge-drafts-xhs-${userId}`,JSON.stringify(nextDrafts));}catch{}
+  }
+ };
+
  const commitChallenge=(closeAfter=true)=>{
   if(challengeDay===null)return;
   const trimmedTitle=challengeTitle.trim();
   const trimmedText=challengeText.trim();
   if(!trimmedTitle&&!trimmedText)return;
-  saveChallengeDay(challengeDay,trimmedTitle,challengeText);
-  setTopicPriority(challengeDay,challengePriority);
-  const nextTypes={...challengeTypes,[challengeDay]:challengeType};
-  setChallengeTypes(nextTypes);
-  try{localStorage.setItem(`challenge-types-${userId}`,JSON.stringify(nextTypes));}catch{}
-  const nextDrafts={...challengeDrafts};
-  delete nextDrafts[challengeDay];
-  setChallengeDrafts(nextDrafts);
-  try{localStorage.setItem(`challenge-drafts-${userId}`,JSON.stringify(nextDrafts));}catch{}
+
+  if(challengeEditorPart==='part1'){
+   const nextDone={...challengeDone,[challengeDay]:challengeText};
+   setChallengeDone(nextDone);
+   try{localStorage.setItem(`challenge-done-${userId}`,JSON.stringify(nextDone));}catch{}
+   if(trimmedTitle){
+    const nextTitles={...challengeTitles,[challengeDay]:trimmedTitle};
+    setChallengeTitles(nextTitles);
+    try{localStorage.setItem(`challenge-titles-${userId}`,JSON.stringify(nextTitles));}catch{}
+   }
+   setTopicPriority(challengeDay,challengePriority);
+   const nextTypes={...challengeTypes,[challengeDay]:challengeType};
+   setChallengeTypes(nextTypes);
+   try{localStorage.setItem(`challenge-types-${userId}`,JSON.stringify(nextTypes));}catch{}
+   const nextDrafts={...challengeDrafts};
+   delete nextDrafts[challengeDay];
+   setChallengeDrafts(nextDrafts);
+   try{localStorage.setItem(`challenge-drafts-${userId}`,JSON.stringify(nextDrafts));}catch{}
+   toast.success(`Challenge C${challengeDay} 已保存 ✅`);
+  }else if(challengeEditorPart==='zhihu'){
+   const nextDone={...zhihuDone,[challengeDay]:challengeText};
+   setZhihuDone(nextDone);
+   try{localStorage.setItem(`challenge-done-zhihu-${userId}`,JSON.stringify(nextDone));}catch{}
+   if(trimmedTitle){
+    const nextTitles={...zhihuTitles,[challengeDay]:trimmedTitle};
+    setZhihuTitles(nextTitles);
+    try{localStorage.setItem(`challenge-titles-zhihu-${userId}`,JSON.stringify(nextTitles));}catch{}
+    const nextTopics=zhihuTopics.map(t=>t.id===challengeDay?{...t,title:trimmedTitle}:t);
+    setZhihuTopics(nextTopics);
+    try{localStorage.setItem(`source-topics-zhihu-${userId}`,JSON.stringify(nextTopics));}catch{}
+   }
+   setPartPriority(challengeDay,challengePriority,'zhihu');
+   const nextTypes={...zhihuTypes,[challengeDay]:challengeType};
+   setZhihuTypes(nextTypes);
+   try{localStorage.setItem(`challenge-types-zhihu-${userId}`,JSON.stringify(nextTypes));}catch{}
+   const nextDrafts={...zhihuDrafts};
+   delete nextDrafts[challengeDay];
+   setZhihuDrafts(nextDrafts);
+   try{localStorage.setItem(`challenge-drafts-zhihu-${userId}`,JSON.stringify(nextDrafts));}catch{}
+   toast.success(`知乎选题已保存 ✅`);
+  }else if(challengeEditorPart==='xhs'){
+   const nextDone={...xhsDone,[challengeDay]:challengeText};
+   setXhsDone(nextDone);
+   try{localStorage.setItem(`challenge-done-xhs-${userId}`,JSON.stringify(nextDone));}catch{}
+   if(trimmedTitle){
+    const nextTitles={...xhsTitles,[challengeDay]:trimmedTitle};
+    setXhsTitles(nextTitles);
+    try{localStorage.setItem(`challenge-titles-xhs-${userId}`,JSON.stringify(nextTitles));}catch{}
+    const nextTopics=xhsTopics.map(t=>t.id===challengeDay?{...t,title:trimmedTitle}:t);
+    setXhsTopics(nextTopics);
+    try{localStorage.setItem(`source-topics-xhs-${userId}`,JSON.stringify(nextTopics));}catch{}
+   }
+   setPartPriority(challengeDay,challengePriority,'xhs');
+   const nextTypes={...xhsTypes,[challengeDay]:challengeType};
+   setXhsTypes(nextTypes);
+   try{localStorage.setItem(`challenge-types-xhs-${userId}`,JSON.stringify(nextTypes));}catch{}
+   const nextDrafts={...xhsDrafts};
+   delete nextDrafts[challengeDay];
+   setXhsDrafts(nextDrafts);
+   try{localStorage.setItem(`challenge-drafts-xhs-${userId}`,JSON.stringify(nextDrafts));}catch{}
+   toast.success(`小红书选题已保存 ✅`);
+  }
+
   if(closeAfter){
    setChallengeEditorOpen(false);
-   toast.success(`Challenge ${challengeDay} 已保存 ✅`);
-  }else{
-   toast.success(`Challenge ${challengeDay} 已保存 ✅`);
   }
  };
+
  useEffect(()=>{
   if(!challengeEditorOpen)return;
   const onKeyDown=(e:KeyboardEvent)=>{
@@ -130,26 +255,217 @@ export default function Workbench({userId}:{userId:string}){
   };
   window.addEventListener('keydown',onKeyDown);
   return()=>window.removeEventListener('keydown',onKeyDown);
- },[challengeEditorOpen,challengeDay,challengeTitle,challengeText,challengePriority,challengeType,challengeDrafts,challengeTypes,challengeDone,challengeTitles,challengePriorities]);
- const openChallengeEditor=(day:number)=>{
+ },[challengeEditorOpen,challengeDay,challengeEditorPart,challengeTitle,challengeText,challengePriority,challengeType,challengeDrafts,challengeTypes,challengeDone,challengeTitles,challengePriorities,zhihuDrafts,zhihuTypes,zhihuDone,zhihuTitles,zhihuPriorities,zhihuTopics,xhsDrafts,xhsTypes,xhsDone,xhsTitles,xhsPriorities,xhsTopics]);
+
+ const openChallengeEditor=(day:number,part:'part1'|'zhihu'|'xhs'='part1')=>{
+  setChallengeEditorPart(part);
   setChallengeDay(day);
-  const draft=challengeDrafts[day];
-  const defTopic=challengeTopics.find(t=>t.day===day);
-  const defType=(defTopic?.type||'pain') as 'pain'|'discovery'|'thought';
-  if(draft){
-   setChallengeTitle(draft.title??(challengeTitles[day]||defTopic?.title||''));
-   setChallengeText(draft.text??(challengeDone[day]||''));
-   setChallengePriority(draft.priority??(challengePriorities[day]||0));
-   setChallengeType(draft.type??(challengeTypes[day]||defType));
-  }else{
-   setChallengeTitle(challengeTitles[day]||defTopic?.title||'');
-   setChallengeText(challengeDone[day]||'');
-   setChallengePriority(challengePriorities[day]||0);
-   setChallengeType(challengeTypes[day]||defType);
+  if(part==='part1'){
+   const draft=challengeDrafts[day];
+   const defTopic=challengeTopics.find(t=>t.day===day);
+   const defType=(defTopic?.type||'pain') as 'pain'|'discovery'|'thought';
+   if(draft){
+    setChallengeTitle(draft.title??(challengeTitles[day]||defTopic?.title||''));
+    setChallengeText(draft.text??(challengeDone[day]||''));
+    setChallengePriority(draft.priority??(challengePriorities[day]||0));
+    setChallengeType(draft.type??(challengeTypes[day]||defType));
+   }else{
+    setChallengeTitle(challengeTitles[day]||defTopic?.title||'');
+    setChallengeText(challengeDone[day]||'');
+    setChallengePriority(challengePriorities[day]||0);
+    setChallengeType(challengeTypes[day]||defType);
+   }
+  }else if(part==='zhihu'){
+   const draft=zhihuDrafts[day];
+   const defTopic=zhihuTopics.find(t=>t.id===day);
+   const defType='pain';
+   if(draft){
+    setChallengeTitle(draft.title??(zhihuTitles[day]||defTopic?.title||''));
+    setChallengeText(draft.text??(zhihuDone[day]||''));
+    setChallengePriority(draft.priority??(zhihuPriorities[day]||0));
+    setChallengeType(draft.type??(zhihuTypes[day]||defType));
+   }else{
+    setChallengeTitle(zhihuTitles[day]||defTopic?.title||'');
+    setChallengeText(zhihuDone[day]||'');
+    setChallengePriority(zhihuPriorities[day]||0);
+    setChallengeType(zhihuTypes[day]||defType);
+   }
+  }else if(part==='xhs'){
+   const draft=xhsDrafts[day];
+   const defTopic=xhsTopics.find(t=>t.id===day);
+   const defType='pain';
+   if(draft){
+    setChallengeTitle(draft.title??(xhsTitles[day]||defTopic?.title||''));
+    setChallengeText(draft.text??(xhsDone[day]||''));
+    setChallengePriority(draft.priority??(xhsPriorities[day]||0));
+    setChallengeType(draft.type??(xhsTypes[day]||defType));
+   }else{
+    setChallengeTitle(xhsTitles[day]||defTopic?.title||'');
+    setChallengeText(xhsDone[day]||'');
+    setChallengePriority(xhsPriorities[day]||0);
+    setChallengeType(xhsTypes[day]||defType);
+   }
   }
   setChallengeEditorOpen(true);
  };
+
+ const addZhihuTopic=()=>{
+  const trimmed=newZhihuTitle.trim();
+  if(!trimmed)return;
+  const nextId=zhihuTopics.length>0?Math.max(...zhihuTopics.map(t=>t.id))+1:1;
+  const newTopic:SourceTopicItem={
+   id:nextId,
+   title:trimmed,
+   order:zhihuTopics.length+1
+  };
+  const next=[...zhihuTopics,newTopic];
+  setZhihuTopics(next);
+  try{localStorage.setItem(`source-topics-zhihu-${userId}`,JSON.stringify(next));}catch{}
+  setNewZhihuTitle('');
+  toast.success('已添加知乎热门选题卡片');
+ };
+
+ const deleteZhihuTopic=(id:number)=>{
+  if(!window.confirm('确定要删除该知乎选题吗？相关草稿与成文也将清理。'))return;
+  const next=zhihuTopics.filter(t=>t.id!==id);
+  setZhihuTopics(next);
+  try{localStorage.setItem(`source-topics-zhihu-${userId}`,JSON.stringify(next));}catch{}
+  const nDone={...zhihuDone};delete nDone[id];setZhihuDone(nDone);
+  try{localStorage.setItem(`challenge-done-zhihu-${userId}`,JSON.stringify(nDone));}catch{}
+  const nTitles={...zhihuTitles};delete nTitles[id];setZhihuTitles(nTitles);
+  try{localStorage.setItem(`challenge-titles-zhihu-${userId}`,JSON.stringify(nTitles));}catch{}
+  const nPriorities={...zhihuPriorities};delete nPriorities[id];setZhihuPriorities(nPriorities);
+  try{localStorage.setItem(`challenge-priorities-zhihu-${userId}`,JSON.stringify(nPriorities));}catch{}
+  const nTypes={...zhihuTypes};delete nTypes[id];setZhihuTypes(nTypes);
+  try{localStorage.setItem(`challenge-types-zhihu-${userId}`,JSON.stringify(nTypes));}catch{}
+  const nDrafts={...zhihuDrafts};delete nDrafts[id];setZhihuDrafts(nDrafts);
+  try{localStorage.setItem(`challenge-drafts-zhihu-${userId}`,JSON.stringify(nDrafts));}catch{}
+  toast.success('选题已删除');
+ };
+
+ const addXhsTopic=()=>{
+  const trimmed=newXhsTitle.trim();
+  if(!trimmed)return;
+  const nextId=xhsTopics.length>0?Math.max(...xhsTopics.map(t=>t.id))+1:1;
+  const newTopic:SourceTopicItem={
+   id:nextId,
+   title:trimmed,
+   order:xhsTopics.length+1
+  };
+  const next=[...xhsTopics,newTopic];
+  setXhsTopics(next);
+  try{localStorage.setItem(`source-topics-xhs-${userId}`,JSON.stringify(next));}catch{}
+  setNewXhsTitle('');
+  toast.success('已添加小红书痛点选题卡片');
+ };
+
+ const deleteXhsTopic=(id:number)=>{
+  if(!window.confirm('确定要删除该小红书选题吗？相关草稿与成文也将清理。'))return;
+  const next=xhsTopics.filter(t=>t.id!==id);
+  setXhsTopics(next);
+  try{localStorage.setItem(`source-topics-xhs-${userId}`,JSON.stringify(next));}catch{}
+  const nDone={...xhsDone};delete nDone[id];setXhsDone(nDone);
+  try{localStorage.setItem(`challenge-done-xhs-${userId}`,JSON.stringify(nDone));}catch{}
+  const nTitles={...xhsTitles};delete nTitles[id];setXhsTitles(nTitles);
+  try{localStorage.setItem(`challenge-titles-xhs-${userId}`,JSON.stringify(nTitles));}catch{}
+  const nPriorities={...xhsPriorities};delete nPriorities[id];setXhsPriorities(nPriorities);
+  try{localStorage.setItem(`challenge-priorities-xhs-${userId}`,JSON.stringify(nPriorities));}catch{}
+  const nTypes={...xhsTypes};delete nTypes[id];setXhsTypes(nTypes);
+  try{localStorage.setItem(`challenge-types-xhs-${userId}`,JSON.stringify(nTypes));}catch{}
+  const nDrafts={...xhsDrafts};delete nDrafts[id];setXhsDrafts(nDrafts);
+  try{localStorage.setItem(`challenge-drafts-xhs-${userId}`,JSON.stringify(nDrafts));}catch{}
+  toast.success('选题已删除');
+ };
+
+ const exportChallengeJson=()=>{
+  const d=new Date();
+  const dateStr=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const exportData={
+   version:1,
+   exportedAt:d.toISOString(),
+   userId,
+   part1:{
+    done:challengeDone,
+    titles:challengeTitles,
+    priorities:challengePriorities,
+    types:challengeTypes,
+    drafts:challengeDrafts
+   },
+   zhihu:{
+    topics:zhihuTopics,
+    done:zhihuDone,
+    titles:zhihuTitles,
+    priorities:zhihuPriorities,
+    types:zhihuTypes,
+    drafts:zhihuDrafts
+   },
+   xhs:{
+    topics:xhsTopics,
+    done:xhsDone,
+    titles:xhsTitles,
+    priorities:xhsPriorities,
+    types:xhsTypes,
+    drafts:xhsDrafts
+   }
+  };
+  const jsonStr=JSON.stringify(exportData,null,2);
+  const blob=new Blob([jsonStr],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`雅思日记-写作挑战备份-${dateStr}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success('已导出全部 3 个 Part 的备份数据！');
+ };
+
+ const importChallengeJson=(e:React.ChangeEvent<HTMLInputElement>)=>{
+  const file=e.target.files?.[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=(event)=>{
+   try{
+    const textContent=event.target?.result as string;
+    const data=JSON.parse(textContent);
+    if(!data)throw new Error('无效的 JSON 文件');
+
+    if(data.part1){
+     if(data.part1.done){setChallengeDone(data.part1.done);try{localStorage.setItem(`challenge-done-${userId}`,JSON.stringify(data.part1.done));}catch{}}
+     if(data.part1.titles){setChallengeTitles(data.part1.titles);try{localStorage.setItem(`challenge-titles-${userId}`,JSON.stringify(data.part1.titles));}catch{}}
+     if(data.part1.priorities){setChallengePriorities(data.part1.priorities);try{localStorage.setItem(`challenge-priorities-${userId}`,JSON.stringify(data.part1.priorities));}catch{}}
+     if(data.part1.types){setChallengeTypes(data.part1.types);try{localStorage.setItem(`challenge-types-${userId}`,JSON.stringify(data.part1.types));}catch{}}
+     if(data.part1.drafts){setChallengeDrafts(data.part1.drafts);try{localStorage.setItem(`challenge-drafts-${userId}`,JSON.stringify(data.part1.drafts));}catch{}}
+    }
+    if(data.zhihu){
+     if(data.zhihu.topics){setZhihuTopics(data.zhihu.topics);try{localStorage.setItem(`source-topics-zhihu-${userId}`,JSON.stringify(data.zhihu.topics));}catch{}}
+     if(data.zhihu.done){setZhihuDone(data.zhihu.done);try{localStorage.setItem(`challenge-done-zhihu-${userId}`,JSON.stringify(data.zhihu.done));}catch{}}
+     if(data.zhihu.titles){setZhihuTitles(data.zhihu.titles);try{localStorage.setItem(`challenge-titles-zhihu-${userId}`,JSON.stringify(data.zhihu.titles));}catch{}}
+     if(data.zhihu.priorities){setZhihuPriorities(data.zhihu.priorities);try{localStorage.setItem(`challenge-priorities-zhihu-${userId}`,JSON.stringify(data.zhihu.priorities));}catch{}}
+     if(data.zhihu.types){setZhihuTypes(data.zhihu.types);try{localStorage.setItem(`challenge-types-zhihu-${userId}`,JSON.stringify(data.zhihu.types));}catch{}}
+     if(data.zhihu.drafts){setZhihuDrafts(data.zhihu.drafts);try{localStorage.setItem(`challenge-drafts-zhihu-${userId}`,JSON.stringify(data.zhihu.drafts));}catch{}}
+    }
+    if(data.xhs){
+     if(data.xhs.topics){setXhsTopics(data.xhs.topics);try{localStorage.setItem(`source-topics-xhs-${userId}`,JSON.stringify(data.xhs.topics));}catch{}}
+     if(data.xhs.done){setXhsDone(data.xhs.done);try{localStorage.setItem(`challenge-done-xhs-${userId}`,JSON.stringify(data.xhs.done));}catch{}}
+     if(data.xhs.titles){setXhsTitles(data.xhs.titles);try{localStorage.setItem(`challenge-titles-xhs-${userId}`,JSON.stringify(data.xhs.titles));}catch{}}
+     if(data.xhs.priorities){setXhsPriorities(data.xhs.priorities);try{localStorage.setItem(`challenge-priorities-xhs-${userId}`,JSON.stringify(data.xhs.priorities));}catch{}}
+     if(data.xhs.types){setXhsTypes(data.xhs.types);try{localStorage.setItem(`challenge-types-xhs-${userId}`,JSON.stringify(data.xhs.types));}catch{}}
+     if(data.xhs.drafts){setXhsDrafts(data.xhs.drafts);try{localStorage.setItem(`challenge-drafts-xhs-${userId}`,JSON.stringify(data.xhs.drafts));}catch{}}
+    }
+    toast.success('备份恢复成功！数据已全部同步更新 ✅');
+   }catch{
+    toast.error('导入失败：文件格式不正确或解析出错');
+   }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+ };
+
  const doneCount=Object.keys(challengeDone).length;
+ const part1DoneCount=doneCount;
+ const zhihuDoneCount=Object.keys(zhihuDone).length;
+ const xhsDoneCount=Object.keys(xhsDone).length;
+ const totalDoneCount=part1DoneCount+zhihuDoneCount+xhsDoneCount;
  const weeks=[...new Set(challengeTopics.map(t=>t.week))];
  const cat=categories.find(c=>c.id===category)!,item=pending[category]??{id:'',content:'',files:[]};
  const reload=useCallback(async()=>{try{const [n,d]=await Promise.all([api<{notes:Note[]}>('/api/notes'),api<{drafts:Draft[]}>('/api/drafts')]);setNotes(n.notes);setDrafts(d.drafts);setLoadError('');}catch(e){setLoadError(errorText(e));}finally{setLoading(false);}},[]);
@@ -244,147 +560,432 @@ export default function Workbench({userId}:{userId:string}){
     {selected.length>0&&reviewTab!=='drafts'&&<div className="selection-bar"><span>已选 {selected.length} 条</span><button className="text-button" onClick={()=>setSelected([])}>取消选择</button><button className="primary-button" onClick={()=>startDiary(selected)}>一起写成日记 <ArrowRight size={16}/></button></div>}
    </TabsContent>
    <TabsContent value="challenge">
-    <div className="page-heading"><div><p className="eyebrow">21-TOPIC WRITING CHALLENGE</p><h1>选一个想写的话题，写出你的身份。</h1><p className="heading-sub">30 个精选选题，自由挑选写满 21 篇。随时随地写下你的真实思考与经历。</p></div></div>
-    <div className="challenge-progress-bar"><div className="challenge-progress-fill" style={{width:`${Math.min(doneCount/21*100,100)}%`}}/></div>
-    <div className="challenge-stats">
-     <span className="challenge-done-count">{doneCount}<small>/21</small></span>
-     <div className="challenge-stats-right">
-      <span className="challenge-stats-label">{doneCount>=21?'🎉 挑战达成！':'已完成'}</span>
-      <button
-       type="button"
-       className={`challenge-minimal-sort-btn ${sortByPriority?'active':''}`}
-       onClick={()=>setSortByPriority(p=>!p)}
-       title="点击切换：按优先级或按默认周顺序排列"
-      >
-       {sortByPriority ? '🔥 优先级排序中' : '🔥 优先级排序'}
-      </button>
-     </div>
+    <div className="page-heading challenge-page-heading">
+      <div>
+        <p className="eyebrow">WRITING CHALLENGE · 3 PARTS</p>
+        <h1>选一个想写的话题，写出你的身份。</h1>
+        <p className="heading-sub">三维选题池（核心挑战 / 知乎热门 / 小红书痛点），目标写满 63 篇。随时随地写下你的真实思考与经历。</p>
+      </div>
+      <div className="challenge-backup-actions">
+        <button
+          type="button"
+          className="outline-button small"
+          onClick={exportChallengeJson}
+          title="导出所有 3 个 Part 的选题、文章与草稿为 JSON 文件"
+        >
+          <Download size={14}/>
+          <span>导出 JSON</span>
+        </button>
+        <button
+          type="button"
+          className="outline-button small"
+          onClick={()=>jsonFileInputRef.current?.click()}
+          title="从 JSON 文件导入并恢复全部数据"
+        >
+          <Upload size={14}/>
+          <span>导入 JSON</span>
+        </button>
+        <input
+          type="file"
+          ref={jsonFileInputRef}
+          accept=".json"
+          onChange={importChallengeJson}
+          style={{display:'none'}}
+        />
+      </div>
     </div>
 
-    {sortByPriority ? (
-     <div className="challenge-topic-list">
-      {[...challengeTopics]
-       .sort((a,b) => {
-        const pa = challengePriorities[a.day]||0, pb = challengePriorities[b.day]||0;
-        if (pb !== pa) return pb - pa;
-        return a.day - b.day;
-       })
-       .map(topic => {
-        const isDone = !!challengeDone[topic.day];
-        const displayTitle = challengeTitles[topic.day] || topic.title;
-        const p = challengePriorities[topic.day] || 0;
-        return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
-         <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`C${topic.day}`}</span></div>
-         <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day)} style={{cursor:'pointer'}} title="点击修改标题与正文">
-          <div className="challenge-title-row">
-           <span className={`challenge-type-pill ${challengeTypes[topic.day]||topic.type}`}>
-             {(challengeTypes[topic.day]||topic.type)==='pain'?'卡点':(challengeTypes[topic.day]||topic.type)==='discovery'?'发现':'随笔'}
-           </span>
-           <h3 className="challenge-title">{displayTitle}</h3>
-           {p > 0 && <span className="challenge-active-flame" title={`${p}级优先级`}>{'🔥'.repeat(p)}</span>}
-          </div>
-         </div>
-         <div className="challenge-card-actions">
+    <div className="challenge-total-banner">
+      <div className="challenge-total-info">
+        <div className="challenge-total-left">
+          <span className="challenge-total-badge">总进度</span>
+          <span className="challenge-total-text">已写 <strong>{totalDoneCount}</strong> / 63 篇</span>
+        </div>
+        <span className="challenge-total-pct">{Math.round((totalDoneCount / 63) * 100)}%</span>
+      </div>
+      <div className="challenge-progress-bar total-bar">
+        <div className="challenge-progress-fill" style={{width:`${Math.min((totalDoneCount/63)*100,100)}%`}}/>
+      </div>
+    </div>
+
+    <div className="challenge-subtabs-bar">
+      <button
+        type="button"
+        className={`challenge-subtab-btn ${challengeSubTab === 'part1' ? 'active' : ''}`}
+        onClick={()=>setChallengeSubTab('part1')}
+      >
+        <span className="subtab-title">Part 一 · 21篇挑战</span>
+        <span className="subtab-count">{part1DoneCount}/21</span>
+      </button>
+      <button
+        type="button"
+        className={`challenge-subtab-btn ${challengeSubTab === 'zhihu' ? 'active' : ''}`}
+        onClick={()=>setChallengeSubTab('zhihu')}
+      >
+        <span className="subtab-title">Part 二 · 知乎热门</span>
+        <span className="subtab-count">{zhihuDoneCount}/21</span>
+      </button>
+      <button
+        type="button"
+        className={`challenge-subtab-btn ${challengeSubTab === 'xhs' ? 'active' : ''}`}
+        onClick={()=>setChallengeSubTab('xhs')}
+      >
+        <span className="subtab-title">Part 三 · 小红书痛点</span>
+        <span className="subtab-count">{xhsDoneCount}/21</span>
+      </button>
+    </div>
+
+    {challengeSubTab === 'part1' && (
+      <>
+        <div className="challenge-progress-bar"><div className="challenge-progress-fill" style={{width:`${Math.min(part1DoneCount/21*100,100)}%`}}/></div>
+        <div className="challenge-stats">
+         <span className="challenge-done-count">{part1DoneCount}<small>/21</small></span>
+         <div className="challenge-stats-right">
+          <span className="challenge-stats-label">{part1DoneCount>=21?'🎉 Part 一 挑战达成！':'已完成'}</span>
           <button
            type="button"
-           className={`challenge-hover-flame-btn ${p > 0 ? 'has-flame' : ''}`}
-           onClick={(e)=>{e.stopPropagation();setTopicPriority(topic.day, p >= 3 ? 0 : p + 1);}}
-           title={p === 0 ? '标为 🔥 (点击标注优先级)' : `当前 ${p}火 · 点击切换`}
+           className={`challenge-minimal-sort-btn ${sortByPriority?'active':''}`}
+           onClick={()=>setSortByPriority(p=>!p)}
+           title="点击切换：按优先级或按默认周顺序排列"
           >
-           {p > 0 ? '🔥'.repeat(p) : '🔥'}
+           {sortByPriority ? '🔥 优先级排序中' : '🔥 优先级排序'}
           </button>
-          {isDone ? (
-           <><button className="primary-button small outline-btn" onClick={()=>openChallengeEditor(topic.day)}>编辑</button><button className="text-button muted" onClick={()=>removeChallengeDay(topic.day)}>撤回</button></>
-          ) : (
-           <button className="primary-button small" onClick={()=>openChallengeEditor(topic.day)}>开始写</button>
-          )}
          </div>
-        </article>;
-       })}
-     </div>
-    ) : (
-     <div className="challenge-weeks">
-      {weeks.map(week => {
-       const weekTopics = challengeTopics.filter(t => t.week === week);
-       const weekDone = weekTopics.filter(t => challengeDone[t.day]).length;
-       const isExpanded = challengeExpanded === week || challengeExpanded === null;
-       return <div key={week} className="challenge-week-group">
-        <button className="challenge-week-header" onClick={()=>setChallengeExpanded(challengeExpanded===week?null:week)}>
-         <div className="week-header-left"><span className="week-name">{week}</span><span className="week-progress">{weekDone}/{weekTopics.length}</span></div>
-         {isExpanded ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
-        </button>
-        {isExpanded && (
+        </div>
+
+        {sortByPriority ? (
          <div className="challenge-topic-list">
-          {weekTopics.map(topic => {
-           const isDone = !!challengeDone[topic.day];
-           const displayTitle = challengeTitles[topic.day] || topic.title;
-           const p = challengePriorities[topic.day] || 0;
-           return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
-            <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`C${topic.day}`}</span></div>
-            <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day)} style={{cursor:'pointer'}} title="点击修改标题与正文">
-             <div className="challenge-title-row">
-              <span className={`challenge-type-pill ${challengeTypes[topic.day]||topic.type}`}>
-             {(challengeTypes[topic.day]||topic.type)==='pain'?'卡点':(challengeTypes[topic.day]||topic.type)==='discovery'?'发现':'随笔'}
-           </span>
-              <h3 className="challenge-title">{displayTitle}</h3>
-              {p > 0 && <span className="challenge-active-flame" title={`${p}级优先级`}>{'🔥'.repeat(p)}</span>}
+          {[...challengeTopics]
+           .sort((a,b) => {
+            const pa = challengePriorities[a.day]||0, pb = challengePriorities[b.day]||0;
+            if (pb !== pa) return pb - pa;
+            return a.day - b.day;
+           })
+           .map(topic => {
+            const isDone = !!challengeDone[topic.day];
+            const displayTitle = challengeTitles[topic.day] || topic.title;
+            const p = challengePriorities[topic.day] || 0;
+            return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
+             <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`C${topic.day}`}</span></div>
+             <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day,'part1')} style={{cursor:'pointer'}} title="点击修改标题与正文">
+              <div className="challenge-title-row">
+               <span className={`challenge-type-pill ${challengeTypes[topic.day]||topic.type}`}>
+                 {(challengeTypes[topic.day]||topic.type)==='pain'?'卡点':(challengeTypes[topic.day]||topic.type)==='discovery'?'发现':'随笔'}
+               </span>
+               <h3 className="challenge-title">{displayTitle}</h3>
+               {p > 0 && <span className="challenge-active-flame" title={`${p}级优先级`}>{'🔥'.repeat(p)}</span>}
+              </div>
              </div>
-            </div>
-            <div className="challenge-card-actions">
-             <button
-              type="button"
-              className={`challenge-hover-flame-btn ${p > 0 ? 'has-flame' : ''}`}
-              onClick={(e)=>{e.stopPropagation();setTopicPriority(topic.day, p >= 3 ? 0 : p + 1);}}
-              title={p === 0 ? '标为 🔥 (点击标注优先级)' : `当前 ${p}火 · 点击切换`}
-             >
-              {p > 0 ? '🔥'.repeat(p) : '🔥'}
-             </button>
-             {isDone ? (
-              <><button className="primary-button small outline-btn" onClick={()=>openChallengeEditor(topic.day)}>编辑</button><button className="text-button muted" onClick={()=>removeChallengeDay(topic.day)}>撤回</button></>
-             ) : (
-              <button className="primary-button small" onClick={()=>openChallengeEditor(topic.day)}>开始写</button>
-             )}
-            </div>
-           </article>;
+             <div className="challenge-card-actions">
+              <button
+               type="button"
+               className={`challenge-hover-flame-btn ${p > 0 ? 'has-flame' : ''}`}
+               onClick={(e)=>{e.stopPropagation();setTopicPriority(topic.day, p >= 3 ? 0 : p + 1);}}
+               title={p === 0 ? '标为 🔥 (点击标注优先级)' : `当前 ${p}火 · 点击切换`}
+              >
+               {p > 0 ? '🔥'.repeat(p) : '🔥'}
+              </button>
+              {isDone ? (
+               <><button className="primary-button small outline-btn" onClick={()=>openChallengeEditor(topic.day,'part1')}>编辑</button><button className="text-button muted" onClick={()=>removeChallengeDay(topic.day)}>撤回</button></>
+              ) : (
+               <button className="primary-button small" onClick={()=>openChallengeEditor(topic.day,'part1')}>开始写</button>
+              )}
+             </div>
+            </article>;
+           })}
+         </div>
+        ) : (
+         <div className="challenge-weeks">
+          {weeks.map(week => {
+           const weekTopics = challengeTopics.filter(t => t.week === week);
+           const weekDone = weekTopics.filter(t => challengeDone[t.day]).length;
+           const isExpanded = challengeExpanded === week || challengeExpanded === null;
+           return <div key={week} className="challenge-week-group">
+            <button className="challenge-week-header" onClick={()=>setChallengeExpanded(challengeExpanded===week?null:week)}>
+             <div className="week-header-left"><span className="week-name">{week}</span><span className="week-progress">{weekDone}/{weekTopics.length}</span></div>
+             {isExpanded ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+            </button>
+            {isExpanded && (
+             <div className="challenge-topic-list">
+              {weekTopics.map(topic => {
+               const isDone = !!challengeDone[topic.day];
+               const displayTitle = challengeTitles[topic.day] || topic.title;
+               const p = challengePriorities[topic.day] || 0;
+               return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
+                <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`C${topic.day}`}</span></div>
+                <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day,'part1')} style={{cursor:'pointer'}} title="点击修改标题与正文">
+                 <div className="challenge-title-row">
+                  <span className={`challenge-type-pill ${challengeTypes[topic.day]||topic.type}`}>
+                 {(challengeTypes[topic.day]||topic.type)==='pain'?'卡点':(challengeTypes[topic.day]||topic.type)==='discovery'?'发现':'随笔'}
+               </span>
+                  <h3 className="challenge-title">{displayTitle}</h3>
+                  {p > 0 && <span className="challenge-active-flame" title={`${p}级优先级`}>{'🔥'.repeat(p)}</span>}
+                 </div>
+                </div>
+                <div className="challenge-card-actions">
+                 <button
+                  type="button"
+                  className={`challenge-hover-flame-btn ${p > 0 ? 'has-flame' : ''}`}
+                  onClick={(e)=>{e.stopPropagation();setTopicPriority(topic.day, p >= 3 ? 0 : p + 1);}}
+                  title={p === 0 ? '标为 🔥 (点击标注优先级)' : `当前 ${p}火 · 点击切换`}
+                 >
+                  {p > 0 ? '🔥'.repeat(p) : '🔥'}
+                 </button>
+                 {isDone ? (
+                  <><button className="primary-button small outline-btn" onClick={()=>openChallengeEditor(topic.day,'part1')}>编辑</button><button className="text-button muted" onClick={()=>removeChallengeDay(topic.day)}>撤回</button></>
+                 ) : (
+                  <button className="primary-button small" onClick={()=>openChallengeEditor(topic.day,'part1')}>开始写</button>
+                 )}
+                </div>
+               </article>;
+              })}
+             </div>
+            )}
+           </div>;
           })}
          </div>
         )}
-       </div>;
-      })}
-     </div>
+      </>
     )}
+
+    {challengeSubTab === 'zhihu' && (
+      <>
+        <div className="challenge-progress-bar"><div className="challenge-progress-fill" style={{width:`${Math.min(zhihuDoneCount/21*100,100)}%`}}/></div>
+        <div className="challenge-stats">
+         <span className="challenge-done-count">{zhihuDoneCount}<small>/21</small></span>
+         <div className="challenge-stats-right">
+          <span className="challenge-stats-label">{zhihuDoneCount>=21?'🎉 Part 二 目标达成！':'已完成'}</span>
+          <button
+           type="button"
+           className={`challenge-minimal-sort-btn ${sortByPriority?'active':''}`}
+           onClick={()=>setSortByPriority(p=>!p)}
+           title="点击切换：按优先级或按添加顺序排列"
+          >
+           {sortByPriority ? '🔥 优先级排序中' : '🔥 优先级排序'}
+          </button>
+         </div>
+        </div>
+
+        <div className="challenge-add-topic-bar">
+          <input
+            type="text"
+            className="challenge-add-input"
+            placeholder="输入知乎热门选题标题，按回车添加..."
+            value={newZhihuTitle}
+            onChange={e=>setNewZhihuTitle(e.target.value)}
+            onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addZhihuTopic();}}}
+          />
+          <button type="button" className="primary-button small" onClick={addZhihuTopic} disabled={!newZhihuTitle.trim()}>
+            <Plus size={15}/>
+            <span>添加选题</span>
+          </button>
+        </div>
+
+        {zhihuTopics.length === 0 ? (
+          <div className="challenge-empty-state">
+            <Sparkles size={32} strokeWidth={1.4}/>
+            <h3>知乎热门选题池暂无卡片</h3>
+            <p>在上方输入框中粘贴每天收集的热门知乎标题，按回车即可添加！</p>
+          </div>
+        ) : (
+          <div className="challenge-topic-list">
+            {(sortByPriority
+              ? [...zhihuTopics].sort((a,b)=>{
+                  const pa=zhihuPriorities[a.id]||0, pb=zhihuPriorities[b.id]||0;
+                  if(pb!==pa) return pb-pa;
+                  return a.order - b.order;
+                })
+              : zhihuTopics
+            ).map((topic, index) => {
+              const isDone = !!zhihuDone[topic.id];
+              const displayTitle = zhihuTitles[topic.id] || topic.title;
+              const p = zhihuPriorities[topic.id] || 0;
+              const cType = zhihuTypes[topic.id] || 'pain';
+              return (
+                <article key={topic.id} className={`challenge-card ${isDone?'is-done':''}`}>
+                  <div className="challenge-card-left">
+                    <span className={`challenge-day-badge ${isDone?'done':''}`}>
+                      {isDone ? <Check size={14}/> : `Z${index+1}`}
+                    </span>
+                  </div>
+                  <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.id,'zhihu')} style={{cursor:'pointer'}} title="点击修改标题与正文">
+                    <div className="challenge-title-row">
+                      <span className={`challenge-type-pill ${cType}`}>
+                        {cType === 'pain' ? '卡点' : cType === 'discovery' ? '发现' : '随笔'}
+                      </span>
+                      <h3 className="challenge-title">{displayTitle}</h3>
+                      {p > 0 && <span className="challenge-active-flame" title={`${p}级优先级`}>{'🔥'.repeat(p)}</span>}
+                    </div>
+                  </div>
+                  <div className="challenge-card-actions">
+                    <button
+                      type="button"
+                      className={`challenge-hover-flame-btn ${p > 0 ? 'has-flame' : ''}`}
+                      onClick={(e)=>{e.stopPropagation();setPartPriority(topic.id, p >= 3 ? 0 : p + 1, 'zhihu');}}
+                      title={p === 0 ? '标为 🔥 (点击标注优先级)' : `当前 ${p}火 · 点击切换`}
+                    >
+                      {p > 0 ? '🔥'.repeat(p) : '🔥'}
+                    </button>
+                    {isDone ? (
+                      <>
+                        <button className="primary-button small outline-btn" onClick={()=>openChallengeEditor(topic.id,'zhihu')}>编辑</button>
+                        <button className="text-button muted" onClick={()=>removeChallengeItem(topic.id,'zhihu')}>撤回</button>
+                      </>
+                    ) : (
+                      <button className="primary-button small" onClick={()=>openChallengeEditor(topic.id,'zhihu')}>开始写</button>
+                    )}
+                    <button
+                      type="button"
+                      className="text-button danger-btn"
+                      onClick={()=>deleteZhihuTopic(topic.id)}
+                      title="删除该选题"
+                    >
+                      <Trash2 size={14}/>
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </>
+    )}
+
+    {challengeSubTab === 'xhs' && (
+      <>
+        <div className="challenge-progress-bar"><div className="challenge-progress-fill" style={{width:`${Math.min(xhsDoneCount/21*100,100)}%`}}/></div>
+        <div className="challenge-stats">
+         <span className="challenge-done-count">{xhsDoneCount}<small>/21</small></span>
+         <div className="challenge-stats-right">
+          <span className="challenge-stats-label">{xhsDoneCount>=21?'🎉 Part 三 目标达成！':'已完成'}</span>
+          <button
+           type="button"
+           className={`challenge-minimal-sort-btn ${sortByPriority?'active':''}`}
+           onClick={()=>setSortByPriority(p=>!p)}
+           title="点击切换：按优先级或按添加顺序排列"
+          >
+           {sortByPriority ? '🔥 优先级排序中' : '🔥 优先级排序'}
+          </button>
+         </div>
+        </div>
+
+        <div className="challenge-add-topic-bar">
+          <input
+            type="text"
+            className="challenge-add-input"
+            placeholder="输入小红书痛点/情绪选题标题，按回车添加..."
+            value={newXhsTitle}
+            onChange={e=>setNewXhsTitle(e.target.value)}
+            onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addXhsTopic();}}}
+          />
+          <button type="button" className="primary-button small" onClick={addXhsTopic} disabled={!newXhsTitle.trim()}>
+            <Plus size={15}/>
+            <span>添加选题</span>
+          </button>
+        </div>
+
+        {xhsTopics.length === 0 ? (
+          <div className="challenge-empty-state">
+            <Sparkles size={32} strokeWidth={1.4}/>
+            <h3>小红书痛点选题池暂无卡片</h3>
+            <p>在上方输入框中填入读者的真实疑问或情绪痛点，按回车即可添加！</p>
+          </div>
+        ) : (
+          <div className="challenge-topic-list">
+            {(sortByPriority
+              ? [...xhsTopics].sort((a,b)=>{
+                  const pa=xhsPriorities[a.id]||0, pb=xhsPriorities[b.id]||0;
+                  if(pb!==pa) return pb-pa;
+                  return a.order - b.order;
+                })
+              : xhsTopics
+            ).map((topic, index) => {
+              const isDone = !!xhsDone[topic.id];
+              const displayTitle = xhsTitles[topic.id] || topic.title;
+              const p = xhsPriorities[topic.id] || 0;
+              const cType = xhsTypes[topic.id] || 'pain';
+              return (
+                <article key={topic.id} className={`challenge-card ${isDone?'is-done':''}`}>
+                  <div className="challenge-card-left">
+                    <span className={`challenge-day-badge ${isDone?'done':''}`}>
+                      {isDone ? <Check size={14}/> : `X${index+1}`}
+                    </span>
+                  </div>
+                  <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.id,'xhs')} style={{cursor:'pointer'}} title="点击修改标题与正文">
+                    <div className="challenge-title-row">
+                      <span className={`challenge-type-pill ${cType}`}>
+                        {cType === 'pain' ? '卡点' : cType === 'discovery' ? '发现' : '随笔'}
+                      </span>
+                      <h3 className="challenge-title">{displayTitle}</h3>
+                      {p > 0 && <span className="challenge-active-flame" title={`${p}级优先级`}>{'🔥'.repeat(p)}</span>}
+                    </div>
+                  </div>
+                  <div className="challenge-card-actions">
+                    <button
+                      type="button"
+                      className={`challenge-hover-flame-btn ${p > 0 ? 'has-flame' : ''}`}
+                      onClick={(e)=>{e.stopPropagation();setPartPriority(topic.id, p >= 3 ? 0 : p + 1, 'xhs');}}
+                      title={p === 0 ? '标为 🔥 (点击标注优先级)' : `当前 ${p}火 · 点击切换`}
+                    >
+                      {p > 0 ? '🔥'.repeat(p) : '🔥'}
+                    </button>
+                    {isDone ? (
+                      <>
+                        <button className="primary-button small outline-btn" onClick={()=>openChallengeEditor(topic.id,'xhs')}>编辑</button>
+                        <button className="text-button muted" onClick={()=>removeChallengeItem(topic.id,'xhs')}>撤回</button>
+                      </>
+                    ) : (
+                      <button className="primary-button small" onClick={()=>openChallengeEditor(topic.id,'xhs')}>开始写</button>
+                    )}
+                    <button
+                      type="button"
+                      className="text-button danger-btn"
+                      onClick={()=>deleteXhsTopic(topic.id)}
+                      title="删除该选题"
+                    >
+                      <Trash2 size={14}/>
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </>
+    )}
+
     <div className="challenge-stage-roadmap">
       <div className="stage-goal-card stage-active">
         <div className="stage-goal-header">
           <span className="stage-pill-tag active">阶段一 · 进行中</span>
-          <span className="stage-progress-badge">{doneCount} / 21 篇</span>
+          <span className="stage-progress-badge">{totalDoneCount} / 63 篇</span>
         </div>
         <h3 className="stage-goal-title">先用数量逼出质量</h3>
         <div className="stage-goal-rule">
           <span className="stage-rule-label">创作底线</span>
           <span className="stage-rule-val">准 · 干净 · 事实对 · 零套话</span>
         </div>
-        <p className="stage-goal-desc">写得越多越懂素材与受众。先写完 21 篇，不用纠结首稿完不完美，有得挑才有得磨。</p>
+        <p className="stage-goal-desc">写得越多越懂素材与受众。先写完 63 篇（三个 Part 各满 21 篇），不用纠结首稿完不完美，有得挑才有得磨。</p>
       </div>
 
       <div className="stage-goal-card stage-upcoming">
         <div className="stage-goal-header">
           <span className="stage-pill-tag upcoming">阶段二 · 待开启</span>
-          <span className="stage-status-badge">完成 21 篇后进入</span>
+          <span className="stage-status-badge">完成 63 篇后进入</span>
         </div>
         <h3 className="stage-goal-title">选最好的改成观众爱读</h3>
         <div className="stage-goal-rule">
           <span className="stage-rule-label">进阶方向</span>
           <span className="stage-rule-val">读者视角 · 好读耐读 · 节奏精修</span>
         </div>
-        <p className="stage-goal-desc">从 21 篇库里优选最具受众价值的素材，精调开篇钩子与行文网感，打磨成型后正式发布。</p>
+        <p className="stage-goal-desc">从选题与成文库里优选最具受众价值的素材，精调开篇钩子与行文网感，打磨成型后正式发布。</p>
       </div>
     </div>
    </TabsContent>
    </main><footer className="site-footer">
     {view==='challenge'?(
       <>
-        <span className="site-footer-stage-left"><strong>阶段一</strong> 准、干净、无套话，先完成 21 篇 ({doneCount}/21)</span>
+        <span className="site-footer-stage-left"><strong>阶段一</strong> 准、干净、无套话，各完成 21 篇 (总计 {totalDoneCount}/63)</span>
         <span className="site-footer-stage-right"><strong>阶段二</strong> 选出最好的，改成观众爱读</span>
       </>
     ):(
@@ -425,8 +1026,22 @@ export default function Workbench({userId}:{userId:string}){
    </div>
   </DialogContent></Dialog>
  <Dialog open={challengeEditorOpen} onOpenChange={setChallengeEditorOpen}><DialogContent className="challenge-editor-dialog">
-   <DialogTitle>Challenge {challengeDay} · 自由写作</DialogTitle>
-   <DialogDescription>想写哪个就写哪个。标题与正文均可自由修改，保存即计入挑战进度。</DialogDescription>
+   <DialogTitle>
+     {challengeEditorPart === 'part1'
+       ? `Challenge C${challengeDay} · 自由写作`
+       : challengeEditorPart === 'zhihu'
+       ? `知乎选题 · 自由写作`
+       : `小红书痛点 · 自由写作`
+     }
+   </DialogTitle>
+   <DialogDescription>
+     {challengeEditorPart === 'part1'
+       ? '想写哪个就写哪个。标题与正文均可自由修改，保存即计入挑战进度。'
+       : challengeEditorPart === 'zhihu'
+       ? '知乎热门话题写作。结合你的真实备考或技术经历作答，保存即计入挑战进度。'
+       : '小红书读者真实痛点写作。直击真实疑问与情绪，保存即计入挑战进度。'
+     }
+   </DialogDescription>
    <div className="challenge-split-layout">
     <section className="challenge-editor-pane">
      <div className="challenge-input-group">

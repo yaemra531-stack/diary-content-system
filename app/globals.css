@@ -1904,3 +1904,237 @@ html.dark body {
     margin-top: 24px;
   }
 }
+
+/* ===== 写作挑战三 Part 扩展样式 ===== */
+.challenge-page-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.challenge-backup-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.challenge-total-banner {
+  background: var(--card, #ffffff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+:root.dark .challenge-total-banner {
+  background: #18191a;
+  border-color: #2e3032;
+}
+
+.challenge-total-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.challenge-total-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.challenge-total-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #214e42;
+  color: #fff;
+}
+:root.dark .challenge-total-badge {
+  background: #346353;
+}
+
+.challenge-total-text {
+  font-size: 0.92rem;
+  color: var(--foreground, #111);
+}
+.challenge-total-text strong {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #214e42;
+}
+:root.dark .challenge-total-text strong {
+  color: #9cd3be;
+}
+
+.challenge-total-pct {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #214e42;
+}
+:root.dark .challenge-total-pct {
+  color: #9cd3be;
+}
+
+.challenge-progress-bar.total-bar {
+  margin: 0;
+  height: 9px;
+  background: rgba(0, 0, 0, 0.05);
+}
+:root.dark .challenge-progress-bar.total-bar {
+  background: rgba(255, 255, 255, 0.08);
+}
+.challenge-progress-bar.total-bar .challenge-progress-fill {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.challenge-subtabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  padding-bottom: 14px;
+  overflow-x: auto;
+}
+
+.challenge-subtab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  border: 1px solid var(--border, #e5e7eb);
+  background: var(--card, #fff);
+  color: var(--foreground, #333);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+:root.dark .challenge-subtab-btn {
+  background: #1c1d1e;
+  border-color: #2e3032;
+  color: #ccc;
+}
+
+.challenge-subtab-btn:hover {
+  background: var(--accent, #f3f5f3);
+  border-color: #214e42;
+}
+:root.dark .challenge-subtab-btn:hover {
+  background: #252829;
+  border-color: #598674;
+}
+
+.challenge-subtab-btn.active {
+  background: #214e42;
+  border-color: #214e42;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(33, 78, 66, 0.2);
+}
+:root.dark .challenge-subtab-btn.active {
+  background: #2b5548;
+  border-color: #598674;
+  color: #fff;
+}
+
+.challenge-subtab-btn .subtab-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--muted-foreground, #666);
+}
+:root.dark .challenge-subtab-btn .subtab-count {
+  background: rgba(255, 255, 255, 0.08);
+  color: #aaa;
+}
+
+.challenge-subtab-btn.active .subtab-count {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.challenge-add-topic-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+:root.dark .challenge-add-topic-bar {
+  background: #1c1d1e;
+  border-color: #2e3032;
+}
+
+.challenge-add-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.92rem;
+  color: var(--foreground, #111);
+  padding: 4px 6px;
+}
+:root.dark .challenge-add-input {
+  color: #eee;
+}
+.challenge-add-input::placeholder {
+  color: var(--muted-foreground, #999);
+}
+
+.challenge-empty-state {
+  text-align: center;
+  padding: 56px 20px;
+  border: 1.5px dashed var(--border, #e2e8f0);
+  border-radius: 14px;
+  margin-bottom: 24px;
+  background: rgba(0, 0, 0, 0.01);
+  color: var(--muted-foreground, #777);
+}
+:root.dark .challenge-empty-state {
+  border-color: #2e3032;
+  background: rgba(255, 255, 255, 0.01);
+}
+.challenge-empty-state svg {
+  margin: 0 auto 12px;
+  opacity: 0.6;
+}
+.challenge-empty-state h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--foreground, #222);
+  margin: 0 0 6px;
+}
+:root.dark .challenge-empty-state h3 {
+  color: #e5e7eb;
+}
+.challenge-empty-state p {
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+.danger-btn {
+  color: var(--muted-foreground, #888);
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+.danger-btn:hover {
+  color: #e11d48 !important;
+  background: rgba(225, 29, 72, 0.08);
+}

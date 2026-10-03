@@ -111,3 +111,10 @@ export const challengeTopics: ChallengeEntry[] = [
   { day:29, title:'在职备考碎片时间怎么背单词',         type:'pain',      week:'收尾加餐' },
   { day:30, title:'在阅读里背单词记得牢得多',           type:'discovery', week:'收尾加餐' },
 ];
+
+// --- 用户自建选题（知乎 / 小红书）---
+export type SourceTopicItem = {
+  id: number;
+  title: string;
+  order: number;
+};
