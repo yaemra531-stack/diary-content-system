@@ -185,34 +185,26 @@ export default function Workbench({userId}:{userId:string}){
     {selected.length>0&&reviewTab!=='drafts'&&<div className="selection-bar"><span>已选 {selected.length} 条</span><button className="text-button" onClick={()=>setSelected([])}>取消选择</button><button className="primary-button" onClick={()=>startDiary(selected)}>一起写成日记 <ArrowRight size={16}/></button></div>}
    </TabsContent>
    <TabsContent value="challenge">
-    <div className="page-heading"><div><p className="eyebrow">21-DAY WRITING CHALLENGE</p><h1>每天一个选题，写出你的身份。</h1><p className="heading-sub">30 个精选话题，目标完成 21 篇。用「一个认知 + 一个做法」结构，按优先级突破核心选题。</p></div></div>
+    <div className="page-heading"><div><p className="eyebrow">21-DAY WRITING CHALLENGE</p><h1>每天一个选题，写出你的身份。</h1><p className="heading-sub">30 个精选话题，目标完成 21 篇。用「一个认知 + 一个做法」结构，把经历变成内容。</p></div></div>
     <div className="challenge-progress-bar"><div className="challenge-progress-fill" style={{width:`${Math.min(doneCount/21*100,100)}%`}}/></div>
-    <div className="challenge-stats"><span className="challenge-done-count">{doneCount}<small>/21</small></span><span className="challenge-stats-label">{doneCount>=21?'🎉 挑战达成！':'已完成'}</span></div>
-
-    <div className="challenge-toolbar">
-     <div className="challenge-filter-row">
-      <span className="challenge-filter-label">筛选：</span>
-      <button type="button" className={`challenge-filter-btn ${challengeFilter==='all'?'active':''}`} onClick={()=>setChallengeFilter('all')}>全部 ({challengeTopics.length})</button>
-      <button type="button" className={`challenge-filter-btn ${challengeFilter==='p3'?'active':''}`} onClick={()=>setChallengeFilter('p3')}>🔥🔥🔥 核心 ({challengeTopics.filter(t=>(challengePriorities[t.day]||0)===3).length})</button>
-      <button type="button" className={`challenge-filter-btn ${challengeFilter==='p2'?'active':''}`} onClick={()=>setChallengeFilter('p2')}>🔥🔥 重点 ({challengeTopics.filter(t=>(challengePriorities[t.day]||0)===2).length})</button>
-      <button type="button" className={`challenge-filter-btn ${challengeFilter==='p1'?'active':''}`} onClick={()=>setChallengeFilter('p1')}>🔥 常规 ({challengeTopics.filter(t=>(challengePriorities[t.day]||0)===1).length})</button>
-      <button type="button" className={`challenge-filter-btn ${challengeFilter==='todo'?'active':''}`} onClick={()=>setChallengeFilter('todo')}>未写 ({challengeTopics.filter(t=>!challengeDone[t.day]).length})</button>
+    <div className="challenge-stats">
+     <span className="challenge-done-count">{doneCount}<small>/21</small></span>
+     <div className="challenge-stats-right">
+      <span className="challenge-stats-label">{doneCount>=21?'🎉 挑战达成！':'已完成'}</span>
+      <button
+       type="button"
+       className={`challenge-minimal-sort-btn ${sortByPriority?'active':''}`}
+       onClick={()=>setSortByPriority(p=>!p)}
+       title="点击切换：按优先级或按默认周顺序排列"
+      >
+       {sortByPriority ? '🔥 优先级排序中' : '🔥 优先级排序'}
+      </button>
      </div>
-     <button type="button" className={`challenge-sort-btn ${sortByPriority?'active':''}`} onClick={()=>setSortByPriority(p=>!p)}>
-      {sortByPriority ? '🔥 优先级优先' : '📅 默认时间排序'}
-     </button>
     </div>
 
     {sortByPriority ? (
      <div className="challenge-topic-list">
       {[...challengeTopics]
-       .filter(t => {
-        if (challengeFilter === 'p3') return (challengePriorities[t.day]||0) === 3;
-        if (challengeFilter === 'p2') return (challengePriorities[t.day]||0) === 2;
-        if (challengeFilter === 'p1') return (challengePriorities[t.day]||0) === 1;
-        if (challengeFilter === 'todo') return !challengeDone[t.day];
-        return true;
-       })
        .sort((a,b) => {
         const pa = challengePriorities[a.day]||0, pb = challengePriorities[b.day]||0;
         if (pb !== pa) return pb - pa;
@@ -225,18 +217,21 @@ export default function Workbench({userId}:{userId:string}){
         return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
          <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`D${topic.day}`}</span></div>
          <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day)} style={{cursor:'pointer'}} title="点击修改标题与正文">
-          <h3 className="challenge-title">{displayTitle}</h3>
-          <div className="challenge-meta-row">
+          <div className="challenge-title-row">
            <span className={`challenge-type-pill ${topic.type}`}>{topic.type==='pain'?'卡点':'发现'}</span>
-           <span className="challenge-week-tag">{topic.week}</span>
-           <div className="challenge-priority-selector" onClick={e=>e.stopPropagation()} title="设置优先级：1火/2火/3火">
-            {[1, 2, 3].map(lvl => (
-             <button key={lvl} type="button" className={`flame-btn ${p >= lvl ? 'lit' : ''}`} onClick={()=>setTopicPriority(topic.day, p === lvl ? 0 : lvl)} title={lvl === 1 ? '🔥 常规' : lvl === 2 ? '🔥🔥 重点' : '🔥🔥🔥 核心必写'}>🔥</button>
-            ))}
-           </div>
+           <h3 className="challenge-title">{displayTitle}</h3>
+           {p > 0 && <span className="challenge-active-flame" title={`${p}级优先级`}>{'🔥'.repeat(p)}</span>}
           </div>
          </div>
          <div className="challenge-card-actions">
+          <button
+           type="button"
+           className={`challenge-hover-flame-btn ${p > 0 ? 'has-flame' : ''}`}
+           onClick={(e)=>{e.stopPropagation();setTopicPriority(topic.day, p >= 3 ? 0 : p + 1);}}
+           title={p === 0 ? '标为 🔥 (点击标注优先级)' : `当前 ${p}火 · 点击切换`}
+          >
+           {p > 0 ? '🔥'.repeat(p) : '🔥'}
+          </button>
           {isDone ? (
            <><button className="primary-button small outline-btn" onClick={()=>openChallengeEditor(topic.day)}>编辑</button><button className="text-button muted" onClick={()=>removeChallengeDay(topic.day)}>撤回</button></>
           ) : (
@@ -249,14 +244,7 @@ export default function Workbench({userId}:{userId:string}){
     ) : (
      <div className="challenge-weeks">
       {weeks.map(week => {
-       let weekTopics = challengeTopics.filter(t => t.week === week);
-       if (challengeFilter === 'p3') weekTopics = weekTopics.filter(t => (challengePriorities[t.day]||0) === 3);
-       else if (challengeFilter === 'p2') weekTopics = weekTopics.filter(t => (challengePriorities[t.day]||0) === 2);
-       else if (challengeFilter === 'p1') weekTopics = weekTopics.filter(t => (challengePriorities[t.day]||0) === 1);
-       else if (challengeFilter === 'todo') weekTopics = weekTopics.filter(t => !challengeDone[t.day]);
-
-       if (challengeFilter !== 'all' && weekTopics.length === 0) return null;
-
+       const weekTopics = challengeTopics.filter(t => t.week === week);
        const weekDone = weekTopics.filter(t => challengeDone[t.day]).length;
        const isExpanded = challengeExpanded === week || challengeExpanded === null;
        return <div key={week} className="challenge-week-group">
@@ -273,17 +261,21 @@ export default function Workbench({userId}:{userId:string}){
            return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
             <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`D${topic.day}`}</span></div>
             <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day)} style={{cursor:'pointer'}} title="点击修改标题与正文">
-             <h3 className="challenge-title">{displayTitle}</h3>
-             <div className="challenge-meta-row">
+             <div className="challenge-title-row">
               <span className={`challenge-type-pill ${topic.type}`}>{topic.type==='pain'?'卡点':'发现'}</span>
-              <div className="challenge-priority-selector" onClick={e=>e.stopPropagation()} title="设置优先级：1火/2火/3火">
-               {[1, 2, 3].map(lvl => (
-                <button key={lvl} type="button" className={`flame-btn ${p >= lvl ? 'lit' : ''}`} onClick={()=>setTopicPriority(topic.day, p === lvl ? 0 : lvl)} title={lvl === 1 ? '🔥 常规' : lvl === 2 ? '🔥🔥 重点' : '🔥🔥🔥 核心必写'}>🔥</button>
-               ))}
-              </div>
+              <h3 className="challenge-title">{displayTitle}</h3>
+              {p > 0 && <span className="challenge-active-flame" title={`${p}级优先级`}>{'🔥'.repeat(p)}</span>}
              </div>
             </div>
             <div className="challenge-card-actions">
+             <button
+              type="button"
+              className={`challenge-hover-flame-btn ${p > 0 ? 'has-flame' : ''}`}
+              onClick={(e)=>{e.stopPropagation();setTopicPriority(topic.day, p >= 3 ? 0 : p + 1);}}
+              title={p === 0 ? '标为 🔥 (点击标注优先级)' : `当前 ${p}火 · 点击切换`}
+             >
+              {p > 0 ? '🔥'.repeat(p) : '🔥'}
+             </button>
              {isDone ? (
               <><button className="primary-button small outline-btn" onClick={()=>openChallengeEditor(topic.day)}>编辑</button><button className="text-button muted" onClick={()=>removeChallengeDay(topic.day)}>撤回</button></>
              ) : (

@@ -1253,105 +1253,136 @@ html.dark body {
   background: rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Priority selector and toolbar */
-.challenge-meta-row {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 5px;
+/* Subtractive Priority and Clean Inline Badges */
+.challenge-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
-.challenge-week-tag {
-  font-size: 0.72rem; padding: 2px 6px; border-radius: 4px;
-  background: rgba(0, 0, 0, 0.04); color: var(--muted-foreground, #666);
+.challenge-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--foreground, #111);
 }
-:root.dark .challenge-week-tag {
-  background: rgba(255, 255, 255, 0.05); color: #9ca3af;
-}
-
-.challenge-priority-selector {
-  display: inline-flex; align-items: center; gap: 1px;
-  padding: 1px 3px; border-radius: 6px;
-  background: rgba(0, 0, 0, 0.03);
-}
-:root.dark .challenge-priority-selector {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.flame-btn {
-  border: none; background: transparent; padding: 1px 2px;
-  cursor: pointer; font-size: 0.82rem; line-height: 1;
-  border-radius: 4px; opacity: 0.22;
-  transition: opacity 0.15s, transform 0.15s;
-}
-.flame-btn.lit {
-  opacity: 1; filter: drop-shadow(0 1px 2px rgba(217, 119, 6, 0.3));
-}
-.challenge-card:hover .flame-btn:not(.lit) {
-  opacity: 0.55;
-}
-.flame-btn:hover {
-  opacity: 1; transform: scale(1.18);
+.challenge-active-flame {
+  font-size: 0.8rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(217, 119, 6, 0.25));
+  letter-spacing: -1px;
 }
 
-.challenge-toolbar {
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 10px; margin: 16px 0 20px;
-  padding: 10px 14px; background: var(--muted, #f8f9fa);
-  border-radius: 10px; border: 1px solid var(--border, #e5e7eb);
+.challenge-stats {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 24px;
 }
-.challenge-filter-row {
-  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+.challenge-stats-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.challenge-filter-label {
-  font-size: 0.8rem; font-weight: 500; color: var(--muted-foreground, #666);
-}
-.challenge-filter-btn {
-  border: 1px solid transparent; background: transparent;
-  padding: 4px 10px; border-radius: 6px; font-size: 0.78rem;
-  color: var(--muted-foreground, #555); cursor: pointer;
+.challenge-minimal-sort-btn {
+  border: 1px solid var(--border, #e5e7eb);
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  color: var(--muted-foreground, #666);
+  cursor: pointer;
   transition: all 0.15s ease;
 }
-.challenge-filter-btn:hover {
-  background: rgba(0, 0, 0, 0.05); color: var(--foreground, #111);
+.challenge-minimal-sort-btn:hover {
+  border-color: #d97706;
+  color: #b45309;
+  background: rgba(217, 119, 6, 0.05);
 }
-.challenge-filter-btn.active {
-  background: var(--background, #fff); color: var(--foreground, #111);
-  font-weight: 600; border-color: var(--border, #d1d5db);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+.challenge-minimal-sort-btn.active {
+  border-color: #d97706;
+  color: #b45309;
+  background: rgba(217, 119, 6, 0.12);
+  font-weight: 600;
 }
-.challenge-sort-btn {
-  border: 1px solid var(--border, #d1d5db); background: var(--background, #fff);
-  padding: 5px 12px; border-radius: 6px; font-size: 0.8rem;
-  color: var(--foreground, #333); cursor: pointer;
-  display: flex; align-items: center; gap: 4px; font-weight: 500;
-  transition: all 0.15s ease;
+:root.dark .challenge-minimal-sort-btn {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #9ca3af;
 }
-.challenge-sort-btn.active {
-  background: #fffbeb; border-color: #f59e0b; color: #b45309; font-weight: 600;
+:root.dark .challenge-minimal-sort-btn:hover {
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.1);
 }
-:root.dark .challenge-sort-btn.active {
-  background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;
+:root.dark .challenge-minimal-sort-btn.active {
+  border-color: #f59e0b;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.2);
+}
+
+.challenge-hover-flame-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+.challenge-card:hover .challenge-hover-flame-btn {
+  opacity: 0.45;
+}
+.challenge-hover-flame-btn:hover {
+  opacity: 1 !important;
+  transform: scale(1.15);
+}
+.challenge-hover-flame-btn.has-flame {
+  opacity: 0.85;
+}
+.challenge-hover-flame-btn.has-flame:hover {
+  opacity: 1;
 }
 
 .challenge-priority-field {
   margin-bottom: 12px;
 }
 .challenge-flame-dialog-picker {
-  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
 }
 .flame-pill-btn {
-  border: 1px solid var(--border, #e5e7eb); background: var(--muted, #f9fafb);
-  padding: 6px 12px; border-radius: 8px; font-size: 0.82rem;
-  cursor: pointer; color: var(--muted-foreground, #555);
+  border: 1px solid var(--border, #e5e7eb);
+  background: var(--muted, #f9fafb);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  color: var(--muted-foreground, #555);
   transition: all 0.15s;
 }
 .flame-pill-btn:hover {
-  border-color: var(--ring, #f97316); color: var(--foreground, #111);
+  border-color: var(--ring, #f97316);
+  color: var(--foreground, #111);
 }
 .flame-pill-btn.active {
-  background: var(--background, #fff); border-color: #f59e0b;
-  color: #b45309; font-weight: 600; box-shadow: 0 1px 3px rgba(245, 158, 11, 0.15);
+  background: var(--background, #fff);
+  border-color: #f59e0b;
+  color: #b45309;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(245, 158, 11, 0.15);
 }
 :root.dark .flame-pill-btn {
-  background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: #aaa;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #aaa;
 }
 :root.dark .flame-pill-btn.active {
-  background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
 }
