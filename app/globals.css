@@ -1716,3 +1716,20 @@ html.dark body {
 .markdown-rendered-body > :last-child {
   margin-bottom: 0;
 }
+
+.challenge-actions-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.challenge-autosave-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.76rem;
+  color: var(--muted-foreground, #888);
+  user-select: none;
+}
+:root.dark .challenge-autosave-status {
+  color: #777;
+}

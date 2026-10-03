@@ -32,6 +32,7 @@ export default function Workbench({userId}:{userId:string}){
  const [challengePriorities,setChallengePriorities]=useState<Record<number,number>>({});
  const [challengePriority,setChallengePriority]=useState<number>(0);
  const [challengeTypes,setChallengeTypes]=useState<Record<number,'pain'|'discovery'|'thought'>>({});
+ const [challengeDrafts,setChallengeDrafts]=useState<Record<number,{title:string;text:string;priority:number;type:'pain'|'discovery'|'thought';updatedAt:number}>>({});
  const [challengeType,setChallengeType]=useState<'pain'|'discovery'|'thought'>('pain');
  const [challengeFilter,setChallengeFilter]=useState<'all'|'p3'|'p2'|'p1'|'todo'>('all');
  const [sortByPriority,setSortByPriority]=useState<boolean>(false);
@@ -69,6 +70,8 @@ export default function Workbench({userId}:{userId:string}){
    if(savedPriorities)setChallengePriorities(JSON.parse(savedPriorities));
    const savedTypes=localStorage.getItem(`challenge-types-${userId}`);
    if(savedTypes)setChallengeTypes(JSON.parse(savedTypes));
+   const savedDrafts=localStorage.getItem(`challenge-drafts-${userId}`);
+   if(savedDrafts)setChallengeDrafts(JSON.parse(savedDrafts));
   }catch{}
  },[userId]);
  const setTopicPriority=(day:number,priority:number)=>{
@@ -88,13 +91,62 @@ export default function Workbench({userId}:{userId:string}){
   }
  };
  const removeChallengeDay=(day:number)=>{const next={...challengeDone};delete next[day];setChallengeDone(next);try{localStorage.setItem(`challenge-done-${userId}`,JSON.stringify(next));}catch{}};
+ const saveDraft=(day:number,title:string,text:string,priority:number,type:'pain'|'discovery'|'thought')=>{
+  const nextDrafts={...challengeDrafts,[day]:{title,text,priority,type,updatedAt:Date.now()}};
+  setChallengeDrafts(nextDrafts);
+  try{localStorage.setItem(`challenge-drafts-${userId}`,JSON.stringify(nextDrafts));}catch{}
+ };
+ const commitChallenge=(closeAfter=true)=>{
+  if(challengeDay===null)return;
+  const trimmedTitle=challengeTitle.trim();
+  const trimmedText=challengeText.trim();
+  if(!trimmedTitle&&!trimmedText)return;
+  saveChallengeDay(challengeDay,trimmedTitle,challengeText);
+  setTopicPriority(challengeDay,challengePriority);
+  const nextTypes={...challengeTypes,[challengeDay]:challengeType};
+  setChallengeTypes(nextTypes);
+  try{localStorage.setItem(`challenge-types-${userId}`,JSON.stringify(nextTypes));}catch{}
+  const nextDrafts={...challengeDrafts};
+  delete nextDrafts[challengeDay];
+  setChallengeDrafts(nextDrafts);
+  try{localStorage.setItem(`challenge-drafts-${userId}`,JSON.stringify(nextDrafts));}catch{}
+  if(closeAfter){
+   setChallengeEditorOpen(false);
+   toast.success(`Challenge ${challengeDay} 已保存 ✅`);
+  }else{
+   toast.success(`Challenge ${challengeDay} 已保存 ✅`);
+  }
+ };
+ useEffect(()=>{
+  if(!challengeEditorOpen)return;
+  const onKeyDown=(e:KeyboardEvent)=>{
+   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='s'){
+    e.preventDefault();
+    commitChallenge(false);
+   }else if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){
+    e.preventDefault();
+    commitChallenge(true);
+   }
+  };
+  window.addEventListener('keydown',onKeyDown);
+  return()=>window.removeEventListener('keydown',onKeyDown);
+ },[challengeEditorOpen,challengeDay,challengeTitle,challengeText,challengePriority,challengeType,challengeDrafts,challengeTypes,challengeDone,challengeTitles,challengePriorities]);
  const openChallengeEditor=(day:number)=>{
   setChallengeDay(day);
-  setChallengeTitle(challengeTitles[day]||challengeTopics.find(t=>t.day===day)?.title||'');
-  setChallengeText(challengeDone[day]||'');
-  setChallengePriority(challengePriorities[day]||0);
-  const defType = (challengeTopics.find(t=>t.day===day)?.type || 'pain') as 'pain'|'discovery'|'thought';
-  setChallengeType(challengeTypes[day]||defType);
+  const draft=challengeDrafts[day];
+  const defTopic=challengeTopics.find(t=>t.day===day);
+  const defType=(defTopic?.type||'pain') as 'pain'|'discovery'|'thought';
+  if(draft){
+   setChallengeTitle(draft.title??(challengeTitles[day]||defTopic?.title||''));
+   setChallengeText(draft.text??(challengeDone[day]||''));
+   setChallengePriority(draft.priority??(challengePriorities[day]||0));
+   setChallengeType(draft.type??(challengeTypes[day]||defType));
+  }else{
+   setChallengeTitle(challengeTitles[day]||defTopic?.title||'');
+   setChallengeText(challengeDone[day]||'');
+   setChallengePriority(challengePriorities[day]||0);
+   setChallengeType(challengeTypes[day]||defType);
+  }
   setChallengeEditorOpen(true);
  };
  const doneCount=Object.keys(challengeDone).length;
@@ -340,13 +392,13 @@ export default function Workbench({userId}:{userId:string}){
     <section className="challenge-editor-pane">
      <div className="challenge-input-group">
        <label className="challenge-input-label">文章标题</label>
-       <input type="text" className="challenge-title-input" placeholder="输入或修改文章标题..." maxLength={120} value={challengeTitle} onChange={e=>setChallengeTitle(e.target.value)}/>
+       <input type="text" className="challenge-title-input" placeholder="输入或修改文章标题..." maxLength={120} value={challengeTitle} onChange={e=>{const val=e.target.value;setChallengeTitle(val);if(challengeDay!==null)saveDraft(challengeDay,val,challengeText,challengePriority,challengeType);}}/>
      </div>
      <div className="challenge-priority-field">
         <label className="challenge-input-label">优先级设置</label>
         <div className="challenge-flame-dialog-picker">
           {[0, 1, 2, 3].map(lvl => (
-            <button key={lvl} type="button" className={`flame-pill-btn ${challengePriority === lvl ? 'active' : ''}`} onClick={()=>setChallengePriority(lvl)}>
+            <button key={lvl} type="button" className={`flame-pill-btn ${challengePriority === lvl ? 'active' : ''}`} onClick={()=>{setChallengePriority(lvl);if(challengeDay!==null)saveDraft(challengeDay,challengeTitle,challengeText,lvl,challengeType);}}>
               {lvl === 0 ? '未标注' : lvl === 1 ? '🔥 常规' : lvl === 2 ? '🔥🔥 重点' : '🔥🔥🔥 核心'}
             </button>
           ))}
@@ -357,7 +409,7 @@ export default function Workbench({userId}:{userId:string}){
          <label className="challenge-input-label">正文内容 (支持 Markdown)</label>
          <span className="challenge-char-count">{challengeText.length} 字</span>
        </div>
-       <textarea className="challenge-textarea" placeholder="写下关于这个话题的真实经历、思考或心得... (支持 Markdown 语法)" value={challengeText} onChange={e=>setChallengeText(e.target.value)} maxLength={20000}/>
+       <textarea className="challenge-textarea" placeholder="写下关于这个话题的真实经历、思考或心得... (支持 Markdown 语法)" value={challengeText} onChange={e=>{const val=e.target.value;setChallengeText(val);if(challengeDay!==null)saveDraft(challengeDay,challengeTitle,val,challengePriority,challengeType);}} maxLength={20000}/>
      </div>
     </section>
 
@@ -383,7 +435,7 @@ export default function Workbench({userId}:{userId:string}){
               key={item.id}
               type="button"
               className={`type-pill-btn ${challengeType === item.id ? 'active' : ''}`}
-              onClick={()=>setChallengeType(item.id as 'pain'|'discovery'|'thought')}
+              onClick={()=>{const t=item.id as 'pain'|'discovery'|'thought';setChallengeType(t);if(challengeDay!==null)saveDraft(challengeDay,challengeTitle,challengeText,challengePriority,t);}}
             >
               {item.label}
             </button>
@@ -414,15 +466,13 @@ export default function Workbench({userId}:{userId:string}){
     </section>
    </div>
    <div className="challenge-editor-actions">
-     <button type="button" className="text-button muted" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>copy([challengeTitle,challengeText].filter(Boolean).join('\n\n'))}><Copy size={15}/> 复制文章</button>
+     <div className="challenge-actions-left">
+       <button type="button" className="text-button muted" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>copy([challengeTitle,challengeText].filter(Boolean).join('\n\n'))}><Copy size={15}/> 复制文章</button>
+       <span className="challenge-autosave-status"><CloudCheck size={13}/> 草稿实时暂存 · ⌘S 快捷保存</span>
+     </div>
      <div className="challenge-actions-right">
        <button type="button" className="text-button muted" onClick={()=>setChallengeEditorOpen(false)}>取消</button>
-       <button className="primary-button" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>{if(challengeDay!==null){saveChallengeDay(challengeDay,challengeTitle.trim(),challengeText);setTopicPriority(challengeDay,challengePriority);
-        const nextTypes = {...challengeTypes, [challengeDay]: challengeType};
-        setChallengeTypes(nextTypes);
-        try{localStorage.setItem(`challenge-types-${userId}`, JSON.stringify(nextTypes));}catch{}
-        setChallengeEditorOpen(false);
-        toast.success(`Challenge ${challengeDay} 已保存 ✅`);}}}>保存修改</button>
+       <button className="primary-button" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>commitChallenge(true)}>保存修改</button>
      </div>
    </div>
   </DialogContent></Dialog>
