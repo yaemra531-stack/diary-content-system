@@ -185,7 +185,7 @@ export default function Workbench({userId}:{userId:string}){
     {selected.length>0&&reviewTab!=='drafts'&&<div className="selection-bar"><span>已选 {selected.length} 条</span><button className="text-button" onClick={()=>setSelected([])}>取消选择</button><button className="primary-button" onClick={()=>startDiary(selected)}>一起写成日记 <ArrowRight size={16}/></button></div>}
    </TabsContent>
    <TabsContent value="challenge">
-    <div className="page-heading"><div><p className="eyebrow">21-TOPIC WRITING CHALLENGE</p><h1>选一个想写的话题，写出你的身份。</h1><p className="heading-sub">30 个精选选题，自由挑选写满 21 篇。用「一个认知 + 一个做法」结构，把经历变成内容。</p></div></div>
+    <div className="page-heading"><div><p className="eyebrow">21-TOPIC WRITING CHALLENGE</p><h1>选一个想写的话题，写出你的身份。</h1><p className="heading-sub">30 个精选选题，自由挑选写满 21 篇。随时随地写下你的真实思考与经历。</p></div></div>
     <div className="challenge-progress-bar"><div className="challenge-progress-fill" style={{width:`${Math.min(doneCount/21*100,100)}%`}}/></div>
     <div className="challenge-stats">
      <span className="challenge-done-count">{doneCount}<small>/21</small></span>
@@ -339,13 +339,12 @@ export default function Workbench({userId}:{userId:string}){
         ))}
       </div>
     </div>
-    <div className="challenge-template-hint"><p>💡 <strong>认知</strong>：我原来以为 ___，后来发现 ___</p><p>💡 <strong>做法</strong>：一个可执行的具体动作</p></div>
    <div className="challenge-input-group">
      <div className="challenge-input-header">
        <label className="challenge-input-label">正文内容</label>
        <span className="challenge-char-count">{challengeText.length} 字</span>
      </div>
-     <textarea className="challenge-textarea" placeholder={"## 认知\n（一句话写清你的认知转变）\n\n## 做法\n（一个可执行的具体动作）"} value={challengeText} onChange={e=>setChallengeText(e.target.value)} maxLength={20000}/>
+     <textarea className="challenge-textarea" placeholder="写下关于这个话题的真实经历、思考或心得..." value={challengeText} onChange={e=>setChallengeText(e.target.value)} maxLength={20000}/>
    </div>
    <div className="challenge-editor-actions">
      <button type="button" className="text-button muted" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>copy([challengeTitle,challengeText].filter(Boolean).join('\n\n'))}><Copy size={15}/> 复制文章</button>
