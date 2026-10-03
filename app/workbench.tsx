@@ -185,7 +185,7 @@ export default function Workbench({userId}:{userId:string}){
     {selected.length>0&&reviewTab!=='drafts'&&<div className="selection-bar"><span>已选 {selected.length} 条</span><button className="text-button" onClick={()=>setSelected([])}>取消选择</button><button className="primary-button" onClick={()=>startDiary(selected)}>一起写成日记 <ArrowRight size={16}/></button></div>}
    </TabsContent>
    <TabsContent value="challenge">
-    <div className="page-heading"><div><p className="eyebrow">21-DAY WRITING CHALLENGE</p><h1>每天一个选题，写出你的身份。</h1><p className="heading-sub">30 个精选话题，目标完成 21 篇。用「一个认知 + 一个做法」结构，把经历变成内容。</p></div></div>
+    <div className="page-heading"><div><p className="eyebrow">21-TOPIC WRITING CHALLENGE</p><h1>选一个想写的话题，写出你的身份。</h1><p className="heading-sub">30 个精选选题，自由挑选写满 21 篇。用「一个认知 + 一个做法」结构，把经历变成内容。</p></div></div>
     <div className="challenge-progress-bar"><div className="challenge-progress-fill" style={{width:`${Math.min(doneCount/21*100,100)}%`}}/></div>
     <div className="challenge-stats">
      <span className="challenge-done-count">{doneCount}<small>/21</small></span>
@@ -215,7 +215,7 @@ export default function Workbench({userId}:{userId:string}){
         const displayTitle = challengeTitles[topic.day] || topic.title;
         const p = challengePriorities[topic.day] || 0;
         return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
-         <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`D${topic.day}`}</span></div>
+         <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`C${topic.day}`}</span></div>
          <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day)} style={{cursor:'pointer'}} title="点击修改标题与正文">
           <div className="challenge-title-row">
            <span className={`challenge-type-pill ${topic.type}`}>{topic.type==='pain'?'卡点':'发现'}</span>
@@ -259,7 +259,7 @@ export default function Workbench({userId}:{userId:string}){
            const displayTitle = challengeTitles[topic.day] || topic.title;
            const p = challengePriorities[topic.day] || 0;
            return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
-            <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`D${topic.day}`}</span></div>
+            <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`C${topic.day}`}</span></div>
             <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day)} style={{cursor:'pointer'}} title="点击修改标题与正文">
              <div className="challenge-title-row">
               <span className={`challenge-type-pill ${topic.type}`}>{topic.type==='pain'?'卡点':'发现'}</span>
@@ -323,8 +323,8 @@ export default function Workbench({userId}:{userId:string}){
    </div>
   </DialogContent></Dialog>
  <Dialog open={challengeEditorOpen} onOpenChange={setChallengeEditorOpen}><DialogContent className="challenge-editor-dialog">
-   <DialogTitle>Day {challengeDay} · 挑战写作</DialogTitle>
-   <DialogDescription>标题与正文均可自由修改。写完保存即点亮今日打卡。</DialogDescription>
+   <DialogTitle>Challenge {challengeDay} · 自由写作</DialogTitle>
+   <DialogDescription>想写哪个就写哪个。标题与正文均可自由修改，保存即计入挑战进度。</DialogDescription>
    <div className="challenge-input-group">
      <label className="challenge-input-label">文章标题</label>
      <input type="text" className="challenge-title-input" placeholder="输入或修改文章标题..." maxLength={120} value={challengeTitle} onChange={e=>setChallengeTitle(e.target.value)}/>
@@ -351,7 +351,7 @@ export default function Workbench({userId}:{userId:string}){
      <button type="button" className="text-button muted" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>copy([challengeTitle,challengeText].filter(Boolean).join('\n\n'))}><Copy size={15}/> 复制文章</button>
      <div className="challenge-actions-right">
        <button type="button" className="text-button muted" onClick={()=>setChallengeEditorOpen(false)}>取消</button>
-       <button className="primary-button" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>{if(challengeDay!==null){saveChallengeDay(challengeDay,challengeTitle.trim(),challengeText);setTopicPriority(challengeDay,challengePriority);setChallengeEditorOpen(false);toast.success(`Day ${challengeDay} 已保存 ✅`);}}}>保存修改</button>
+       <button className="primary-button" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>{if(challengeDay!==null){saveChallengeDay(challengeDay,challengeTitle.trim(),challengeText);setTopicPriority(challengeDay,challengePriority);setChallengeEditorOpen(false);toast.success(`Challenge ${challengeDay} 已保存 ✅`);}}}>保存修改</button>
      </div>
    </div>
   </DialogContent></Dialog>
