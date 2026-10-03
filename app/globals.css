@@ -1353,13 +1353,20 @@ html.dark body {
 .challenge-flame-dialog-picker {
   display: flex;
   gap: 8px;
+  align-items: center;
   flex-wrap: wrap;
   margin-top: 4px;
+  min-height: 34px;
 }
 .flame-pill-btn {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   border: 1px solid var(--border, #e5e7eb);
   background: var(--muted, #f9fafb);
-  padding: 6px 12px;
+  padding: 0 12px;
   border-radius: 8px;
   font-size: 0.82rem;
   cursor: pointer;
@@ -1391,7 +1398,7 @@ html.dark body {
 /* Side-by-side Markdown Live Preview */
 .challenge-split-layout {
   display: grid;
-  grid-template-columns: 1.05fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
   min-height: 480px;
   margin-top: 14px;
@@ -1445,9 +1452,20 @@ html.dark body {
 
 .challenge-preview-scroll {
   flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 280px;
+  max-height: 52vh;
   overflow-y: auto;
-  max-height: 56vh;
-  padding-right: 8px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border, #e5e7eb);
+  background: var(--background, #fff);
+  scrollbar-width: thin;
+}
+:root.dark .challenge-preview-scroll {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .markdown-preview-title {
@@ -1638,13 +1656,21 @@ html.dark body {
 .challenge-type-dialog-picker {
   display: flex;
   gap: 8px;
+  align-items: center;
   flex-wrap: wrap;
   margin-top: 4px;
+  min-height: 34px;
 }
 .type-pill-btn {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   border: 1px solid var(--border, #e5e7eb);
   background: var(--muted, #f9fafb);
-  padding: 6px 12px;
+  padding: 0 16px;
+  min-width: 58px;
   border-radius: 8px;
   font-size: 0.82rem;
   cursor: pointer;
@@ -1682,4 +1708,11 @@ html.dark body {
   background: rgba(99, 102, 241, 0.12);
   color: #a5b4fc;
   border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.markdown-rendered-body > :first-child {
+  margin-top: 0;
+}
+.markdown-rendered-body > :last-child {
+  margin-bottom: 0;
 }

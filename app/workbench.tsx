@@ -375,9 +375,9 @@ export default function Workbench({userId}:{userId:string}){
         <label className="challenge-input-label">内容属性</label>
         <div className="challenge-type-dialog-picker">
           {[
-            { id: 'pain', label: '🛠️ 突破卡点' },
-            { id: 'discovery', label: '💡 经验发现' },
-            { id: 'thought', label: '✍️ 随笔感悟' }
+            { id: 'pain', label: '卡点' },
+            { id: 'discovery', label: '发现' },
+            { id: 'thought', label: '随笔' }
           ].map(item => (
             <button
               key={item.id}
