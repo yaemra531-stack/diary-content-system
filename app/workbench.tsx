@@ -27,7 +27,8 @@ export default function Workbench({userId}:{userId:string}){
  const [exportOpen,setExportOpen]=useState(false),[exportScope,setExportScope]=useState<'today'|'yesterday'|'all'|'starred'|'custom'>('today');
  const [exportCustomDate,setExportCustomDate]=useState(()=>localDate(new Date().toISOString())),[includeAgentPrompt,setIncludeAgentPrompt]=useState(true);
  const [challengeDone,setChallengeDone]=useState<Record<number,string>>({}),[challengeExpanded,setChallengeExpanded]=useState<string|null>(null);
- const [challengeEditorOpen,setChallengeEditorOpen]=useState(false),[challengeDay,setChallengeDay]=useState<number|null>(null),[challengeText,setChallengeText]=useState('');
+ const [challengeTitles,setChallengeTitles]=useState<Record<number,string>>({});
+ const [challengeEditorOpen,setChallengeEditorOpen]=useState(false),[challengeDay,setChallengeDay]=useState<number|null>(null),[challengeTitle,setChallengeTitle]=useState(''),[challengeText,setChallengeText]=useState('');
  useEffect(()=>{
   try {
    const saved=localStorage.getItem('xuejian_theme');
@@ -51,9 +52,31 @@ export default function Workbench({userId}:{userId:string}){
   }
  };
  const fileInput=useRef<HTMLInputElement>(null),textInput=useRef<HTMLTextAreaElement>(null),requestLock=useRef(false);
- useEffect(()=>{try{const saved=localStorage.getItem(`challenge-done-${userId}`);if(saved)setChallengeDone(JSON.parse(saved));}catch{}},[userId]);
- const saveChallengeDay=(day:number,text:string)=>{const next={...challengeDone,[day]:text};setChallengeDone(next);try{localStorage.setItem(`challenge-done-${userId}`,JSON.stringify(next));}catch{}};
+ useEffect(()=>{
+  try{
+   const savedDone=localStorage.getItem(`challenge-done-${userId}`);
+   if(savedDone)setChallengeDone(JSON.parse(savedDone));
+   const savedTitles=localStorage.getItem(`challenge-titles-${userId}`);
+   if(savedTitles)setChallengeTitles(JSON.parse(savedTitles));
+  }catch{}
+ },[userId]);
+ const saveChallengeDay=(day:number,title:string,text:string)=>{
+  const nextDone={...challengeDone,[day]:text};
+  setChallengeDone(nextDone);
+  try{localStorage.setItem(`challenge-done-${userId}`,JSON.stringify(nextDone));}catch{}
+  if(title){
+   const nextTitles={...challengeTitles,[day]:title};
+   setChallengeTitles(nextTitles);
+   try{localStorage.setItem(`challenge-titles-${userId}`,JSON.stringify(nextTitles));}catch{}
+  }
+ };
  const removeChallengeDay=(day:number)=>{const next={...challengeDone};delete next[day];setChallengeDone(next);try{localStorage.setItem(`challenge-done-${userId}`,JSON.stringify(next));}catch{}};
+ const openChallengeEditor=(day:number)=>{
+  setChallengeDay(day);
+  setChallengeTitle(challengeTitles[day]||challengeTopics.find(t=>t.day===day)?.title||'');
+  setChallengeText(challengeDone[day]||'');
+  setChallengeEditorOpen(true);
+ };
  const doneCount=Object.keys(challengeDone).length;
  const weeks=[...new Set(challengeTopics.map(t=>t.week))];
  const cat=categories.find(c=>c.id===category)!,item=pending[category]??{id:'',content:'',files:[]};
@@ -154,11 +177,14 @@ export default function Workbench({userId}:{userId:string}){
     <div className="challenge-stats"><span className="challenge-done-count">{doneCount}<small>/21</small></span><span className="challenge-stats-label">{doneCount>=21?'🎉 挑战达成！':'已完成'}</span></div>
     <div className="challenge-weeks">{weeks.map(week=>{const weekTopics=challengeTopics.filter(t=>t.week===week);const weekDone=weekTopics.filter(t=>challengeDone[t.day]).length;const isExpanded=challengeExpanded===week||challengeExpanded===null;return <div key={week} className="challenge-week-group">
      <button className="challenge-week-header" onClick={()=>setChallengeExpanded(challengeExpanded===week?null:week)}><div className="week-header-left"><span className="week-name">{week}</span><span className="week-progress">{weekDone}/{weekTopics.length}</span></div>{isExpanded?<ChevronUp size={16}/>:<ChevronDown size={16}/>}</button>
-     {isExpanded&&<div className="challenge-topic-list">{weekTopics.map(topic=>{const isDone=!!challengeDone[topic.day];return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
-      <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`D${topic.day}`}</span></div>
-      <div className="challenge-card-body"><h3 className="challenge-title">{topic.title}</h3><span className={`challenge-type-pill ${topic.type}`}>{topic.type==='pain'?'🔴 卡点':'🟢 发现'}</span></div>
-      <div className="challenge-card-actions">{isDone?<><button className="text-button muted" onClick={()=>{setChallengeDay(topic.day);setChallengeText(challengeDone[topic.day]);setChallengeEditorOpen(true);}}>查看</button><button className="text-button muted" onClick={()=>removeChallengeDay(topic.day)}>撤回</button></>:<button className="primary-button small" onClick={()=>{setChallengeDay(topic.day);setChallengeText('');setChallengeEditorOpen(true);}}>开始写</button>}</div>
-     </article>;})}</div>}
+     {isExpanded&&<div className="challenge-topic-list">{weekTopics.map(topic=>{
+      const isDone=!!challengeDone[topic.day];
+      const displayTitle=challengeTitles[topic.day]||topic.title;
+      return <article key={topic.day} className={`challenge-card ${isDone?'is-done':''}`}>
+       <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`D${topic.day}`}</span></div>
+       <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day)} style={{cursor:'pointer'}} title="点击修改标题与正文"><h3 className="challenge-title">{displayTitle}</h3><span className={`challenge-type-pill ${topic.type}`}>{topic.type==='pain'?'🔴 卡点':'🟢 发现'}</span></div>
+       <div className="challenge-card-actions">{isDone?<><button className="primary-button small outline-btn" onClick={()=>openChallengeEditor(topic.day)}>编辑</button><button className="text-button muted" onClick={()=>removeChallengeDay(topic.day)}>撤回</button></>:<button className="primary-button small" onClick={()=>openChallengeEditor(topic.day)}>开始写</button>}</div>
+      </article>;})}</div>}
     </div>;})}</div>
    </TabsContent>
    </main><footer className="site-footer"><span>学间 · 留下真实发生的小事</span><span><CloudCheck size={14}/>保存的记录跟随账号</span></footer>
@@ -193,11 +219,27 @@ export default function Workbench({userId}:{userId:string}){
    </div>
   </DialogContent></Dialog>
  <Dialog open={challengeEditorOpen} onOpenChange={setChallengeEditorOpen}><DialogContent className="challenge-editor-dialog">
-   <DialogTitle>Day {challengeDay} · {challengeTopics.find(t=>t.day===challengeDay)?.title??''}</DialogTitle>
-   <DialogDescription>按「一个认知 + 一个做法」结构来写。写完点保存，即算完成这一天。</DialogDescription>
+   <DialogTitle>Day {challengeDay} · 挑战写作</DialogTitle>
+   <DialogDescription>标题与正文均可自由修改。写完保存即点亮今日打卡。</DialogDescription>
+   <div className="challenge-input-group">
+     <label className="challenge-input-label">文章标题</label>
+     <input type="text" className="challenge-title-input" placeholder="输入或修改文章标题..." maxLength={120} value={challengeTitle} onChange={e=>setChallengeTitle(e.target.value)}/>
+   </div>
    <div className="challenge-template-hint"><p>💡 <strong>认知</strong>：我原来以为 ___，后来发现 ___</p><p>💡 <strong>做法</strong>：一个可执行的具体动作</p></div>
-   <textarea className="challenge-textarea" placeholder={"## 认知\n（一句话写清你的认知转变）\n\n## 做法\n（一个可执行的具体动作）"} value={challengeText} onChange={e=>setChallengeText(e.target.value)} maxLength={20000}/>
-   <div className="challenge-editor-actions"><span className="challenge-char-count">{challengeText.length} 字</span><button className="primary-button" disabled={!challengeText.trim()} onClick={()=>{if(challengeDay!==null){saveChallengeDay(challengeDay,challengeText);setChallengeEditorOpen(false);toast.success(`Day ${challengeDay} 完成！已保存 ✅`);}}}>保存并完成</button></div>
+   <div className="challenge-input-group">
+     <div className="challenge-input-header">
+       <label className="challenge-input-label">正文内容</label>
+       <span className="challenge-char-count">{challengeText.length} 字</span>
+     </div>
+     <textarea className="challenge-textarea" placeholder={"## 认知\n（一句话写清你的认知转变）\n\n## 做法\n（一个可执行的具体动作）"} value={challengeText} onChange={e=>setChallengeText(e.target.value)} maxLength={20000}/>
+   </div>
+   <div className="challenge-editor-actions">
+     <button type="button" className="text-button muted" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>copy([challengeTitle,challengeText].filter(Boolean).join('\n\n'))}><Copy size={15}/> 复制文章</button>
+     <div className="challenge-actions-right">
+       <button type="button" className="text-button muted" onClick={()=>setChallengeEditorOpen(false)}>取消</button>
+       <button className="primary-button" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>{if(challengeDay!==null){saveChallengeDay(challengeDay,challengeTitle.trim(),challengeText);setChallengeEditorOpen(false);toast.success(`Day ${challengeDay} 已保存 ✅`);}}}>保存修改</button>
+     </div>
+   </div>
   </DialogContent></Dialog>
  </div>;
 }
