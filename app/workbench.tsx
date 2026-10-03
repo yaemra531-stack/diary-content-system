@@ -353,8 +353,47 @@ export default function Workbench({userId}:{userId:string}){
       })}
      </div>
     )}
+    <div className="challenge-stage-roadmap">
+      <div className="stage-goal-card stage-active">
+        <div className="stage-goal-header">
+          <span className="stage-pill-tag active">阶段一 · 进行中</span>
+          <span className="stage-progress-badge">{doneCount} / 21 篇</span>
+        </div>
+        <h3 className="stage-goal-title">先用数量逼出质量</h3>
+        <div className="stage-goal-rule">
+          <span className="stage-rule-label">创作底线</span>
+          <span className="stage-rule-val">准 · 干净 · 事实对 · 零套话</span>
+        </div>
+        <p className="stage-goal-desc">写得越多越懂素材与受众。先写完 21 篇，不用纠结首稿完不完美，有得挑才有得磨。</p>
+      </div>
+
+      <div className="stage-goal-card stage-upcoming">
+        <div className="stage-goal-header">
+          <span className="stage-pill-tag upcoming">阶段二 · 待开启</span>
+          <span className="stage-status-badge">完成 21 篇后进入</span>
+        </div>
+        <h3 className="stage-goal-title">选最好的改成观众爱读</h3>
+        <div className="stage-goal-rule">
+          <span className="stage-rule-label">进阶方向</span>
+          <span className="stage-rule-val">读者视角 · 好读耐读 · 节奏精修</span>
+        </div>
+        <p className="stage-goal-desc">从 21 篇库里优选最具受众价值的素材，精调开篇钩子与行文网感，打磨成型后正式发布。</p>
+      </div>
+    </div>
    </TabsContent>
-   </main><footer className="site-footer"><span>学间 · 留下真实发生的小事</span><span><CloudCheck size={14}/>保存的记录跟随账号</span></footer>
+   </main><footer className="site-footer">
+    {view==='challenge'?(
+      <>
+        <span className="site-footer-stage-left"><strong>阶段一</strong> 准、干净、无套话，先完成 21 篇 ({doneCount}/21)</span>
+        <span className="site-footer-stage-right"><strong>阶段二</strong> 选出最好的，改成观众爱读</span>
+      </>
+    ):(
+      <>
+        <span>学间 · 留下真实发生的小事</span>
+        <span><CloudCheck size={14}/>保存的记录跟随账号</span>
+      </>
+    )}
+   </footer>
   </Tabs>
   <Dialog open={editorOpen} onOpenChange={setEditorOpen}><DialogContent className="diary-dialog"><DialogTitle>把这一刻，写成日记</DialogTitle><DialogDescription>原始记录会保留。可以自己写，也可以复制素材给 AI，聊完再把草稿放回来。</DialogDescription><div className="diary-columns"><section className="source-panel"><h3>原始记录 · {sourceNotes.length} 条</h3>{sourceNotes.map(n=><div className="source-note" key={n.id}><span className="small-label">{categoryName(n.category)}</span><p>{n.content||'一条图片记录'}</p>{n.images.map(i=><img key={i.id} src={`/api/images/${i.id}`} alt={i.name}/>)}</div>)}<button className="outline-button" onClick={()=>copy(diaryPrompt(sourceNotes))}><Copy size={16}/>复制素材和整理提示</button><p className="helper-text">粘贴到你正在使用的 AI 对话里；图片需要另行附上。</p></section><section className="diary-writing"><label htmlFor="diary-title">日记标题 <span className="muted">（可选）</span></label><input id="diary-title" placeholder="给这段经历起个名字" maxLength={100} value={editor?.title??''} onChange={e=>changeEditor({title:e.target.value})} disabled={editorSaving}/><label htmlFor="diary-content">日记正文</label><textarea id="diary-content" placeholder="当时发生了什么？你做了什么？后来有什么变化？\n\n像跟朋友聊天一样，先写几句话。" maxLength={20000} value={editor?.content??''} onChange={e=>changeEditor({content:e.target.value})} disabled={editorSaving}/><div className="diary-actions"><button className="text-button" disabled={!editor?.content} onClick={()=>copy([editor?.title,editor?.content].filter(Boolean).join('\n\n'))}><Copy size={16}/>复制正文</button><button className="primary-button" disabled={!editor?.content.trim()||editorSaving} onClick={saveDiary}>{editorSaving?<LoaderCircle size={16} className="spin"/>:<Check size={16}/>}保存日记草稿</button></div><p className="helper-text">{editorSaved?'已保存到账号，可在其他设备继续。':'未保存的输入会暂存于本机，关闭此窗口后可以继续。'}</p></section></div></DialogContent></Dialog>
   <Dialog open={!!editNote} onOpenChange={open=>{if(!open&&!editSaving)setEditNote(null);}}><DialogContent><DialogTitle>编辑记录</DialogTitle><DialogDescription>修改这条记录的文字，保留原有图片和记录时间。</DialogDescription><textarea className="edit-textarea" aria-label="记录内容" value={editText} maxLength={10000} onChange={e=>setEditText(e.target.value)}/><button className="primary-button" disabled={!editText.trim()||editSaving} onClick={async()=>{if(!editNote)return;setEditSaving(true);try{await api('/api/notes',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:editNote.id,content:editText})});setEditNote(null);await reload();toast.success('记录已更新');}catch(e){toast.error(errorText(e));}finally{setEditSaving(false);}}}>保存修改</button></DialogContent></Dialog>

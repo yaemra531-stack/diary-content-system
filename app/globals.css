@@ -1733,3 +1733,174 @@ html.dark body {
 :root.dark .challenge-autosave-status {
   color: #777;
 }
+
+/* Challenge Two-Stage Strategic Roadmap */
+.challenge-stage-roadmap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 36px 0 20px;
+}
+.stage-goal-card {
+  padding: 22px 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border, #dfe5dd);
+  background: var(--card, #fff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.stage-goal-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+.stage-goal-card.stage-active {
+  border-color: rgba(33, 78, 66, 0.28);
+  background: linear-gradient(180deg, rgba(234, 240, 233, 0.45) 0%, var(--card, #fff) 100%);
+}
+:root.dark .stage-goal-card.stage-active {
+  border-color: rgba(89, 134, 116, 0.35);
+  background: linear-gradient(180deg, rgba(33, 78, 66, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+.stage-goal-card.stage-upcoming {
+  border-style: dashed;
+  background: rgba(0, 0, 0, 0.01);
+}
+:root.dark .stage-goal-card.stage-upcoming {
+  background: rgba(255, 255, 255, 0.015);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.stage-goal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.stage-pill-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.stage-pill-tag.active {
+  background: rgba(33, 78, 66, 0.1);
+  color: #214e42;
+  border: 1px solid rgba(33, 78, 66, 0.2);
+}
+:root.dark .stage-pill-tag.active {
+  background: rgba(89, 134, 116, 0.2);
+  color: #9cd3be;
+  border-color: rgba(89, 134, 116, 0.3);
+}
+.stage-pill-tag.upcoming {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--muted-foreground, #777);
+  border: 1px solid var(--border, #e5e7eb);
+}
+:root.dark .stage-pill-tag.upcoming {
+  background: rgba(255, 255, 255, 0.04);
+  color: #888;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.stage-progress-badge,
+.stage-status-badge {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted-foreground, #666);
+}
+.stage-progress-badge {
+  font-weight: 700;
+  color: #214e42;
+}
+:root.dark .stage-progress-badge {
+  color: #9cd3be;
+}
+
+.stage-goal-title {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: var(--foreground, #111);
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.stage-goal-rule {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.03);
+  margin-bottom: 12px;
+  width: fit-content;
+}
+:root.dark .stage-goal-rule {
+  background: rgba(255, 255, 255, 0.04);
+}
+.stage-rule-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted-foreground, #777);
+  text-transform: uppercase;
+}
+.stage-rule-val {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--foreground, #222);
+}
+:root.dark .stage-rule-val {
+  color: #e5e7eb;
+}
+
+.stage-goal-desc {
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--muted-foreground, #666);
+  margin: 0;
+}
+
+.site-footer-stage-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #214e42;
+}
+:root.dark .site-footer-stage-left {
+  color: #9cd3be;
+}
+.site-footer-stage-left strong {
+  background: rgba(33, 78, 66, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+:root.dark .site-footer-stage-left strong {
+  background: rgba(89, 134, 116, 0.2);
+}
+.site-footer-stage-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted-foreground, #8c9783);
+}
+.site-footer-stage-right strong {
+  background: rgba(0, 0, 0, 0.04);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+:root.dark .site-footer-stage-right strong {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 768px) {
+  .challenge-stage-roadmap {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-top: 24px;
+  }
+}
