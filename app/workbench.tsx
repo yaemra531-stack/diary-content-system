@@ -31,6 +31,8 @@ export default function Workbench({userId}:{userId:string}){
  const [challengeTitles,setChallengeTitles]=useState<Record<number,string>>({});
  const [challengePriorities,setChallengePriorities]=useState<Record<number,number>>({});
  const [challengePriority,setChallengePriority]=useState<number>(0);
+ const [challengeTypes,setChallengeTypes]=useState<Record<number,'pain'|'discovery'|'thought'>>({});
+ const [challengeType,setChallengeType]=useState<'pain'|'discovery'|'thought'>('pain');
  const [challengeFilter,setChallengeFilter]=useState<'all'|'p3'|'p2'|'p1'|'todo'>('all');
  const [sortByPriority,setSortByPriority]=useState<boolean>(false);
  const [challengeEditorOpen,setChallengeEditorOpen]=useState(false),[challengeDay,setChallengeDay]=useState<number|null>(null),[challengeTitle,setChallengeTitle]=useState(''),[challengeText,setChallengeText]=useState('');
@@ -65,6 +67,8 @@ export default function Workbench({userId}:{userId:string}){
    if(savedTitles)setChallengeTitles(JSON.parse(savedTitles));
    const savedPriorities=localStorage.getItem(`challenge-priorities-${userId}`);
    if(savedPriorities)setChallengePriorities(JSON.parse(savedPriorities));
+   const savedTypes=localStorage.getItem(`challenge-types-${userId}`);
+   if(savedTypes)setChallengeTypes(JSON.parse(savedTypes));
   }catch{}
  },[userId]);
  const setTopicPriority=(day:number,priority:number)=>{
@@ -89,6 +93,8 @@ export default function Workbench({userId}:{userId:string}){
   setChallengeTitle(challengeTitles[day]||challengeTopics.find(t=>t.day===day)?.title||'');
   setChallengeText(challengeDone[day]||'');
   setChallengePriority(challengePriorities[day]||0);
+  const defType = (challengeTopics.find(t=>t.day===day)?.type || 'pain') as 'pain'|'discovery'|'thought';
+  setChallengeType(challengeTypes[day]||defType);
   setChallengeEditorOpen(true);
  };
  const doneCount=Object.keys(challengeDone).length;
@@ -219,7 +225,9 @@ export default function Workbench({userId}:{userId:string}){
          <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`C${topic.day}`}</span></div>
          <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day)} style={{cursor:'pointer'}} title="点击修改标题与正文">
           <div className="challenge-title-row">
-           <span className={`challenge-type-pill ${topic.type}`}>{topic.type==='pain'?'卡点':'发现'}</span>
+           <span className={`challenge-type-pill ${challengeTypes[topic.day]||topic.type}`}>
+             {(challengeTypes[topic.day]||topic.type)==='pain'?'卡点':(challengeTypes[topic.day]||topic.type)==='discovery'?'发现':'随笔'}
+           </span>
            <h3 className="challenge-title">{displayTitle}</h3>
            {p > 0 && <span className="challenge-active-flame" title={`${p}级优先级`}>{'🔥'.repeat(p)}</span>}
           </div>
@@ -263,7 +271,9 @@ export default function Workbench({userId}:{userId:string}){
             <div className="challenge-card-left"><span className={`challenge-day-badge ${isDone?'done':''}`}>{isDone?<Check size={14}/>:`C${topic.day}`}</span></div>
             <div className="challenge-card-body" onClick={()=>openChallengeEditor(topic.day)} style={{cursor:'pointer'}} title="点击修改标题与正文">
              <div className="challenge-title-row">
-              <span className={`challenge-type-pill ${topic.type}`}>{topic.type==='pain'?'卡点':'发现'}</span>
+              <span className={`challenge-type-pill ${challengeTypes[topic.day]||topic.type}`}>
+             {(challengeTypes[topic.day]||topic.type)==='pain'?'卡点':(challengeTypes[topic.day]||topic.type)==='discovery'?'发现':'随笔'}
+           </span>
               <h3 className="challenge-title">{displayTitle}</h3>
               {p > 0 && <span className="challenge-active-flame" title={`${p}级优先级`}>{'🔥'.repeat(p)}</span>}
              </div>
@@ -352,27 +362,54 @@ export default function Workbench({userId}:{userId:string}){
     </section>
 
     <section className="challenge-preview-pane">
-     <div className="challenge-preview-header">
-       <span className="challenge-preview-label">实时排版预览</span>
-       <span className="challenge-preview-badge">Live Preview</span>
+     <div className="challenge-input-group">
+       <div className="challenge-input-header">
+         <label className="challenge-input-label">排版标题预览</label>
+         <span className="challenge-preview-badge">Live Preview</span>
+       </div>
+       <div className="preview-title-display">
+         {challengeTitle.trim() ? challengeTitle : <span className="preview-title-muted">（左侧输入标题后实时呈现）</span>}
+       </div>
      </div>
-     <div className="challenge-preview-scroll">
-       {challengeTitle.trim() && (
-         <h1 className="markdown-preview-title">{challengeTitle}</h1>
-       )}
-       {challengeText.trim() ? (
-         <div
-           className="markdown-rendered-body"
-           dangerouslySetInnerHTML={{
-             __html: marked.parse(challengeText, { breaks: true, gfm: true }) as string
-           }}
-         />
-       ) : (
-         <div className="markdown-preview-placeholder">
-           <p>👈 在左侧输入标题与正文</p>
-           <small>支持 # 标题、**加粗**、- 列表、&gt; 引用、代码块等 Markdown 语法，此处将即时呈现排版效果。</small>
-         </div>
-       )}
+     <div className="challenge-priority-field">
+        <label className="challenge-input-label">内容属性</label>
+        <div className="challenge-type-dialog-picker">
+          {[
+            { id: 'pain', label: '🛠️ 突破卡点' },
+            { id: 'discovery', label: '💡 经验发现' },
+            { id: 'thought', label: '✍️ 随笔感悟' }
+          ].map(item => (
+            <button
+              key={item.id}
+              type="button"
+              className={`type-pill-btn ${challengeType === item.id ? 'active' : ''}`}
+              onClick={()=>setChallengeType(item.id as 'pain'|'discovery'|'thought')}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+     <div className="challenge-input-group challenge-textarea-group">
+       <div className="challenge-input-header">
+         <label className="challenge-input-label">正文排版渲染</label>
+         <span className="challenge-char-count">{challengeText.trim() ? `${Math.max(1, Math.ceil(challengeText.length/300))} 分钟阅读` : '0 字'}</span>
+       </div>
+       <div className="challenge-preview-scroll">
+         {challengeText.trim() ? (
+           <div
+             className="markdown-rendered-body"
+             dangerouslySetInnerHTML={{
+               __html: marked.parse(challengeText, { breaks: true, gfm: true }) as string
+             }}
+           />
+         ) : (
+           <div className="markdown-preview-placeholder">
+             <p>👈 在左侧输入正文</p>
+             <small>支持 # 标题、**加粗**、- 列表、&gt; 引用、代码块等 Markdown 语法，此处将即时呈现排版效果。</small>
+           </div>
+         )}
+       </div>
      </div>
     </section>
    </div>
@@ -380,7 +417,12 @@ export default function Workbench({userId}:{userId:string}){
      <button type="button" className="text-button muted" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>copy([challengeTitle,challengeText].filter(Boolean).join('\n\n'))}><Copy size={15}/> 复制文章</button>
      <div className="challenge-actions-right">
        <button type="button" className="text-button muted" onClick={()=>setChallengeEditorOpen(false)}>取消</button>
-       <button className="primary-button" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>{if(challengeDay!==null){saveChallengeDay(challengeDay,challengeTitle.trim(),challengeText);setTopicPriority(challengeDay,challengePriority);setChallengeEditorOpen(false);toast.success(`Challenge ${challengeDay} 已保存 ✅`);}}}>保存修改</button>
+       <button className="primary-button" disabled={!challengeTitle.trim()&&!challengeText.trim()} onClick={()=>{if(challengeDay!==null){saveChallengeDay(challengeDay,challengeTitle.trim(),challengeText);setTopicPriority(challengeDay,challengePriority);
+        const nextTypes = {...challengeTypes, [challengeDay]: challengeType};
+        setChallengeTypes(nextTypes);
+        try{localStorage.setItem(`challenge-types-${userId}`, JSON.stringify(nextTypes));}catch{}
+        setChallengeEditorOpen(false);
+        toast.success(`Challenge ${challengeDay} 已保存 ✅`);}}}>保存修改</button>
      </div>
    </div>
   </DialogContent></Dialog>

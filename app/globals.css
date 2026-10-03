@@ -1604,3 +1604,82 @@ html.dark body {
 :root.dark .markdown-preview-placeholder p {
   color: #aaa;
 }
+
+/* Symmetrical Preview Header & Content Type Selector */
+.preview-title-display {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #e5e7eb);
+  background: var(--muted, #f8f9fa);
+  color: var(--foreground, #111);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.preview-title-muted {
+  color: var(--muted-foreground, #999);
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+:root.dark .preview-title-display {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f3f4f6;
+}
+
+.challenge-type-dialog-picker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.type-pill-btn {
+  border: 1px solid var(--border, #e5e7eb);
+  background: var(--muted, #f9fafb);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  color: var(--muted-foreground, #555);
+  transition: all 0.15s;
+}
+.type-pill-btn:hover {
+  border-color: var(--ring, #f97316);
+  color: var(--foreground, #111);
+}
+.type-pill-btn.active {
+  background: var(--background, #fff);
+  border-color: #3b82f6;
+  color: #2563eb;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.12);
+}
+:root.dark .type-pill-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #aaa;
+}
+:root.dark .type-pill-btn.active {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #60a5fa;
+}
+
+.challenge-type-pill.thought {
+  background: rgba(99, 102, 241, 0.06);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+:root.dark .challenge-type-pill.thought {
+  background: rgba(99, 102, 241, 0.12);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
