@@ -569,7 +569,7 @@ export default function Workbench({userId}:{userId:string}){
       <div className="challenge-backup-actions">
         <button
           type="button"
-          className="outline-button small"
+          className="challenge-backup-btn"
           onClick={exportChallengeJson}
           title="导出所有 3 个 Part 的选题、文章与草稿为 JSON 文件"
         >
@@ -578,7 +578,7 @@ export default function Workbench({userId}:{userId:string}){
         </button>
         <button
           type="button"
-          className="outline-button small"
+          className="challenge-backup-btn"
           onClick={()=>jsonFileInputRef.current?.click()}
           title="从 JSON 文件导入并恢复全部数据"
         >
